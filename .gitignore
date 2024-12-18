@@ -1,0 +1,22 @@
+# Ignore all files in .config by default
+*
+
+# Include ~/.config/gitignore
+!.gitignore
+
+# Include these specific dotfiles
+!nvim/
+!nvim/**
+
+!zellij/
+!zellij/**
+
+!ghostty/
+!ghostty/**
+
+!fish/
+!fish/**
+
+# Always ignore these patterns, even if otherwise included
+*/node_modules
+*/.tabby/*
