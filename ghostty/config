@@ -5,12 +5,10 @@ clipboard-write = allow
 # Theme
 theme = Oxocarbon
 background = #161616
-background-opacity = 0.995
+background-opacity = 0.992
+background-blur-radius = 020
 foreground = #f2f4f8
-selection-background = #393939
-selection-foreground = #303030
-cursor-color = #ffffff
-cursor-opacity = 0.3
+
 palette = 0=#161616
 palette = 1=#bf4040
 palette = 2=#b07eff
@@ -27,13 +25,19 @@ palette = 12=#42be65
 palette = 13=#be95ff
 palette = 14=#ff7eb6
 palette = 15=#f2f4f8
+# Cursor
+cursor-color = #ffffff
+cursor-opacity = 0.3
+# Selection
+selection-background = #393939
+selection-foreground = #f2f4f8
 
 # Fonts
 font-size = 18
-# font-family = "JetBrains Mono"
+
 font-family = "FiraCode Nerd Font Mono"
 font-family = "Fira Code"
-# font-family = "Berkeley Mono Variable"
+
 font-feature = +liga
 font-feature = -dlig
 font-feature = +calt
@@ -47,3 +51,5 @@ font-feature = -onum
 # Window
 window-padding-y = 10,0
 macos-titlebar-style = hidden
+window-save-state = always
+
