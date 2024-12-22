@@ -110,7 +110,6 @@ return {
         ts_ls = {}, -- JavaScript/TypeScript
         angularls = {}, -- Angular
         cssls = {}, -- CSS/SCSS
-        tailwindcss = {}, -- Tailwind CSS
         lua_ls = { -- Lua
           settings = {
             Lua = {
@@ -141,6 +140,7 @@ return {
 
   {
     "nvim-treesitter/nvim-treesitter",
+    event = "BufReadPre",
     opts = {
       ensure_installed = {
         "javascript",

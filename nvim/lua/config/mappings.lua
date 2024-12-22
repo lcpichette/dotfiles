@@ -12,12 +12,12 @@ vim.opt.mouse = ""
 local map = vim.keymap.set
 
 -- ============================================
--- = Telescope file/search-related mappings  =
+-- = fzf-lua file/search-related mappings    =
 -- ============================================
-map("n", "<leader>ff", "<cmd>Telescope find_files<CR>", { desc = "Find Files" })
-map("n", "<leader>fg", "<cmd>Telescope live_grep<CR>", { desc = "Find Grep" })
-map("n", "<leader>fb", "<cmd>Telescope buffers<CR>", { desc = "Find Buffers" })
-map("n", "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Find Help" })
+map("n", "<leader>ff", "<cmd>FzfLua files<CR>", { desc = "Find Files" })
+map("n", "<leader>fw", "<cmd>FzfLua live_grep<CR>", { desc = "Find Word/Grep" })
+map("n", "<leader>fb", "<cmd>FzfLua buffers<CR>", { desc = "Find Buffers" })
+map("n", "<leader>fh", "<cmd>FzfLua help_tags<CR>", { desc = "Find Help" })
 
 -- ============================================
 -- = Quickfix list-related mappings           =

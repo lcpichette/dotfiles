@@ -52,6 +52,7 @@ return {
       consistentOperatorPending = false, -- Consistent behavior in operator-pending mode
       subwordMovement = true, -- Enable subword movements
       customPatterns = {}, -- Define custom movement patterns if needed
+      jump_threshold = 30, -- Improve performance
     },
   },
 

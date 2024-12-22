@@ -85,6 +85,7 @@ return {
       "neovim/nvim-lspconfig",
       "williamboman/mason-lspconfig.nvim",
     },
+    cmd = { "Mason", "MasonInstall", "MasonUpdate" },
     config = function()
       require("mason").setup()
       require("mason-lspconfig").setup({

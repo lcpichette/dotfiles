@@ -1,60 +1,44 @@
 return {
   -- Telescope: Fuzzy Finder
   {
-    "nvim-telescope/telescope.nvim",
-    cmd = "Telescope",
+    "ibhagwan/fzf-lua",
+    cmd = "FzfLua",
     dependencies = {
-      -- Plenary is required by Telescope
-      "nvim-lua/plenary.nvim",
-      -- Optional: FZF for faster searching
-      {
-        "nvim-telescope/telescope-fzf-native.nvim",
-        build = "make",
-        cond = vim.fn.executable("make") == 1,
-      },
+      "nvim-tree/nvim-web-devicons", -- optional for file icons
     },
     opts = {
-      defaults = {
-        mappings = {
-          i = {
-            -- Send all search results to Quickfix list with <C-q>
-            ["<C-q>"] = require("telescope.actions").send_to_qflist + require("telescope.actions").open_qflist,
-            -- Multi-select with <Tab> / <S-Tab>
-            ["<Tab>"] = function(prompt_bufnr)
-              require("telescope.actions").toggle_selection(prompt_bufnr)
-              require("telescope.actions").move_selection_next(prompt_bufnr)
-            end,
-            ["<S-Tab>"] = function(prompt_bufnr)
-              require("telescope.actions").toggle_selection(prompt_bufnr)
-              require("telescope.actions").move_selection_previous(prompt_bufnr)
-            end,
-            -- Send selected entries to Quickfix
-            ["<C-s>"] = function(prompt_bufnr)
-              local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
-              local multi_selection = picker:get_multi_selection()
-              if vim.tbl_isempty(multi_selection) then
-                -- If nothing selected, use current entry
-                local entry = require("telescope.actions.state").get_selected_entry()
-                multi_selection = { entry }
-              end
-              require("telescope.actions").send_selected_to_qflist(prompt_bufnr)
-              require("telescope.actions").open_qflist(prompt_bufnr)
-              require("telescope.actions").close(prompt_bufnr)
-            end,
-          },
+      winopts = {
+        height = 0.85, -- percentage of editor height
+        width = 0.85, -- percentage of editor width
+        row = 0.3, -- position from top (0=top, 1=bottom)
+        col = 0.5, -- position from left (0=left, 1=right)
+        border = "rounded", -- border style: 'none', 'single', 'double', 'rounded', etc.
+        preview = {
+          layout = "vertical", -- 'horizontal' or 'vertical'
+          vertical = "up:45%", -- preview at the top with 45% height
         },
-        layout_config = {
-          prompt_position = "top", -- Moves the prompt to the top
+      },
+      keymap = {
+        fzf = {
+          ["ctrl-q"] = "toggle-all", -- similar to sending all results to the quickfix
         },
-        sorting_strategy = "ascending", -- Ensures results list starts from top
+        builtin = {
+          ["<Tab>"] = "toggle+down", -- multi-select and move to next
+          ["<S-Tab>"] = "toggle+up", -- multi-select and move to previous
+          ["ctrl-s"] = "multi+quickfix", -- send selected to quickfix
+        },
+      },
+      fzf_opts = {
+        ["--layout"] = "reverse", -- matches ascending sorting strategy
+      },
+      previewers = {
+        bat = {
+          theme = "ansi", -- matches Telescope theme with `bat` previewer
+        },
       },
     },
     config = function(_, opts)
-      local telescope = require("telescope")
-      telescope.setup(opts)
-
-      -- If you installed telescope-fzf-native, load it:
-      pcall(telescope.load_extension, "fzf")
+      require("fzf-lua").setup(opts)
     end,
   },
 
