@@ -74,29 +74,47 @@ return {
 
       -- Define Oxocarbon color palette
       local oxo = {
-        fg = "#c0caf5", -- Default foreground
-        purple = "#bb9af7", -- Purple
-        blue = "#7aa2f7", -- Blue
-        green = "#7dcfff", -- Green for LSP
-        red = "#f7768e", -- Red for diagnostics
+        fg = "#edf0fc", -- Default foreground
+        purple = "#bb9af7", -- Purple for edits
+        blue = "#7aa2f7", -- Blue for creates
+        red = "#f7768e", -- Red for deletes
       }
 
-      -- Custom lualine theme with no background colors
-      local custom_theme = {
-        normal = {
-          a = { fg = oxo.purple, gui = "bold" },
-          b = { fg = oxo.fg },
-          c = { fg = oxo.fg },
-        },
-        insert = { a = { fg = oxo.blue, gui = "bold" } },
-        visual = { a = { fg = oxo.purple, gui = "bold" } },
-        replace = { a = { fg = oxo.red, gui = "bold" } },
-        inactive = {
-          a = { fg = oxo.fg },
-          b = { fg = oxo.fg },
-          c = { fg = oxo.fg },
-        },
-      }
+      -- Helper function to abbreviate the folder path
+      local function abbreviate_path(filepath)
+        local parts = vim.split(filepath, "/")
+        for i = 1, #parts - 1 do
+          parts[i] = parts[i]:sub(1, 2) -- Keep only the first 2 characters of each folder
+        end
+        return table.concat(parts, "/")
+      end
+
+      -- Custom filename component with abbreviated folders
+      local function custom_filename()
+        local filepath = vim.fn.expand("%:p") -- Full file path
+        local relative_path = vim.fn.fnamemodify(filepath, ":~:.:") -- Relative to cwd
+        return abbreviate_path(relative_path)
+      end
+
+      -- Helper function to display git diff stats
+      local function git_diff()
+        local gitsigns = vim.b.gitsigns_status_dict
+        if not gitsigns then
+          return ""
+        end
+        local added = gitsigns.added or 0
+        local changed = gitsigns.changed or 0
+        local removed = gitsigns.removed or 0
+        return string.format(
+          " %s%s%s %s%s%s %s%s%s",
+          added > 0 and ("%d "):format(added) or "",
+          "%#LualineDiffAdd#",
+          changed > 0 and ("%d "):format(changed) or "",
+          "%#LualineDiffChange#",
+          removed > 0 and ("%d "):format(removed) or "",
+          "%#LualineDiffDelete#"
+        )
+      end
 
       -- Helper function to get active LSP servers
       local function lsp_info()
@@ -108,29 +126,21 @@ return {
         for _, client in ipairs(clients) do
           table.insert(names, client.name)
         end
-        return "⦿ " .. table.concat(names, ", ")
-      end
-
-      -- Helper function to get active linters using nvim_lint
-      local function linters_info()
-        local lint = require("lint")
-        local filetype = vim.bo.filetype
-        local linters = lint.linters_by_ft[filetype] or {}
-        if #linters == 0 then
-          return ""
-        end
-        return "▣ " .. table.concat(linters, ", ")
+        return " " .. table.concat(names, ", ")
       end
 
       -- Configure lualine
       lualine.setup({
         options = {
-          theme = custom_theme,
+          theme = {
+            normal = { c = { fg = oxo.fg } },
+            inactive = { c = { fg = oxo.fg } },
+          },
           section_separators = "",
           component_separators = "",
           disabled_filetypes = { statusline = {}, winbar = {} },
           always_divide_middle = false,
-          globalstatus = true, -- Requires Neovim 0.7+
+          globalstatus = true,
         },
         sections = {
           -- Left sections
@@ -143,41 +153,35 @@ return {
               color = { fg = oxo.purple, gui = "bold" },
             },
           },
-          lualine_b = { "branch" },
-          -- Center is empty for minimalism
-          lualine_c = {},
-          -- Right sections
-          lualine_x = {
+          lualine_b = {
+            { custom_filename, color = { fg = oxo.fg } },
+          },
+          lualine_c = {
             {
-              "filename",
-              path = 1, -- Relative path
-              symbols = { modified = " ●", readonly = " 🔒", unnamed = "[No Name]" },
+              "branch",
+              icons_enabled = false,
+              fmt = function(branch)
+                return "(" .. branch .. ")"
+              end,
+              color = { fg = oxo.fg },
             },
           },
+          -- Right sections
+          lualine_x = { { git_diff } },
           lualine_y = {
             {
               "diagnostics",
               sources = { "nvim_lsp" },
               symbols = { error = " ", warn = " ", info = " ", hint = " " },
               diagnostics_color = {
-                color_error = { fg = oxo.red },
-                color_warn = { fg = oxo.purple },
-                color_info = { fg = oxo.blue },
-                color_hint = { fg = oxo.green },
+                error = { fg = oxo.red },
+                warn = { fg = oxo.purple },
+                info = { fg = oxo.blue },
+                hint = { fg = oxo.fg },
               },
             },
             {
-              function()
-                return lsp_info()
-              end,
-              icon = " ",
-              color = { fg = oxo.green },
-            },
-            {
-              function()
-                return linters_info()
-              end,
-              icon = "⚙️ ",
+              lsp_info,
               color = { fg = oxo.blue },
             },
           },
