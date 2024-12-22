@@ -1,6 +1,8 @@
 -- Plugins specific to altering the UI of neovim
 return {
   -- dressing.nvim: Improve Neovim's UI for input and selection
+  -- Test
+  -- Hello!
   {
     "stevearc/dressing.nvim",
     event = "VeryLazy", -- Load the plugin when Neovim is idle
@@ -65,10 +67,29 @@ return {
     end,
   },
 
+  -- lualine dependency
+  {
+    "lewis6991/gitsigns.nvim",
+    event = { "BufReadPre", "BufNewFile" }, -- Load on file open
+    config = function()
+      require("gitsigns").setup({
+        signs = {
+          add = { text = "+" },
+          change = { text = "~" },
+          delete = { text = "-" },
+        },
+      })
+
+      vim.api.nvim_set_hl(0, "GitSignsAdd", { fg = "#7aa2f7" }) -- Blue
+      vim.api.nvim_set_hl(0, "GitSignsChange", { fg = "#bb9af7" }) -- Purple
+      vim.api.nvim_set_hl(0, "GitSignsDelete", { fg = "#f7768e" }) -- Red
+    end,
+  },
+
   -- lualine, bottom status line
   {
     "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = { "nvim-tree/nvim-web-devicons", "lewis6991/gitsigns.nvim" },
     config = function()
       local lualine = require("lualine")
 
@@ -79,6 +100,11 @@ return {
         blue = "#7aa2f7", -- Blue for creates
         red = "#f7768e", -- Red for deletes
       }
+
+      -- Highlight groups for Git diff colors
+      vim.api.nvim_set_hl(0, "LualineDiffAdd", { fg = oxo.blue })
+      vim.api.nvim_set_hl(0, "LualineDiffChange", { fg = oxo.purple })
+      vim.api.nvim_set_hl(0, "LualineDiffDelete", { fg = oxo.red })
 
       -- Helper function to abbreviate the folder path
       local function abbreviate_path(filepath)
@@ -98,21 +124,20 @@ return {
 
       -- Helper function to display git diff stats
       local function git_diff()
-        local gitsigns = vim.b.gitsigns_status_dict
-        if not gitsigns then
+        local gitsigns_data = vim.b.gitsigns_status_dict
+        if not gitsigns_data then
           return ""
         end
-        local added = gitsigns.added or 0
-        local changed = gitsigns.changed or 0
-        local removed = gitsigns.removed or 0
+
+        local added = gitsigns_data.added or 0
+        local changed = gitsigns_data.changed or 0
+        local removed = gitsigns_data.removed or 0
+
         return string.format(
-          " %s%s%s %s%s%s %s%s%s",
-          added > 0 and ("%d "):format(added) or "",
-          "%#LualineDiffAdd#",
-          changed > 0 and ("%d "):format(changed) or "",
-          "%#LualineDiffChange#",
-          removed > 0 and ("%d "):format(removed) or "",
-          "%#LualineDiffDelete#"
+          "%s%s%s",
+          added > 0 and ("%#LualineDiffAdd#+%d "):format(added) or "",
+          changed > 0 and ("%#LualineDiffChange#~%d "):format(changed) or "",
+          removed > 0 and ("%#LualineDiffDelete#-%d "):format(removed) or ""
         )
       end
 
@@ -167,7 +192,7 @@ return {
             },
           },
           -- Right sections
-          lualine_x = { { git_diff } },
+          lualine_x = { { "diff", git_diff } },
           lualine_y = {
             {
               "diagnostics",
