@@ -1,23 +1,52 @@
 -- nvim/lua/plugins/motion.lua
 return {
-  -- 1. Spider.nvim: Smarter w/b/e motions (camelCase-aware, etc.)
+  -- Spider.nvim: Smarter w/b/e motions (camelCase-aware, etc.)
   {
     "chrisgrieser/nvim-spider",
-    event = "BufReadPre",
+    lazy = true,
     keys = {
-			"e",
-			"<cmd>lua require('spider').motion('e')<CR>",
-			mode = { "n", "o", "x" },
-		},
-    config = function()
-      require("spider").setup({
-        -- your config here, see docs for options
-        skipInsignificantPunctuation = true,
-      })
-    end,
+      {
+        "w",
+        function()
+          require("spider").motion("w")
+        end,
+        mode = { "n", "o", "x" },
+        desc = "Spider-w",
+      },
+      {
+        "e",
+        function()
+          require("spider").motion("e")
+        end,
+        mode = { "n", "o", "x" },
+        desc = "Spider-e",
+      },
+      {
+        "b",
+        function()
+          require("spider").motion("b")
+        end,
+        mode = { "n", "o", "x" },
+        desc = "Spider-b",
+      },
+      {
+        "ge",
+        function()
+          require("spider").motion("ge")
+        end,
+        mode = { "n", "o", "x" },
+        desc = "Spider-ge",
+      },
+    },
+    opts = {
+      skipInsignificantPunctuation = true, -- Skip insignificant punctuation
+      consistentOperatorPending = false, -- Consistent behavior in operator-pending mode
+      subwordMovement = true, -- Enable subword movements
+      customPatterns = {}, -- Define custom movement patterns if needed
+    },
   },
 
-  -- 2. Hop.nvim: Jump to any text in the visible window with minimal keystrokes
+  -- Hop.nvim: Jump to any text in the visible window with minimal keystrokes
   {
     "phaazon/hop.nvim",
     branch = "v2", -- ensure we’re on v2
@@ -40,16 +69,15 @@ return {
       -- (jumping *before* the character), but does a 2-char Hop instead.
       vim.keymap.set({ "n", "x", "o" }, "t", function()
         require("hop").hint_char2({
-          current_line_only = false, 
+          current_line_only = false,
         })
       end, { desc = "Hop 2-char search (like 't')" })
     end,
   },
 
-  -- 3. targets.vim: Additional text objects (e.g., in repeated quotes, blocks, etc.)
+  -- targets.vim: Additional text objects (e.g., in repeated quotes, blocks, etc.)
   {
     "wellle/targets.vim",
     event = "VeryLazy",
   },
 }
-
