@@ -1,8 +1,6 @@
 -- Plugins specific to altering the UI of neovim
 return {
   -- dressing.nvim: Improve Neovim's UI for input and selection
-  -- Test
-  -- Hello!
   {
     "stevearc/dressing.nvim",
     event = "VeryLazy", -- Load the plugin when Neovim is idle
