@@ -8,6 +8,10 @@
 !nvim/
 !nvim/**
 
+# Old neovim setup w/ Astronvim
+!nvim_bak/
+!nvim_bak/**
+
 !zellij/
 !zellij/**
 
