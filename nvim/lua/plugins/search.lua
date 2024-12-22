@@ -13,42 +13,45 @@ return {
         cond = vim.fn.executable("make") == 1,
       },
     },
-    config = function()
-      local telescope = require("telescope")
-      local actions = require("telescope.actions")
-
-      telescope.setup({
-        defaults = {
-          mappings = {
-            i = {
-              -- Send all search results to Quickfix list with <C-q>
-              ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
-              -- Multi-select with <Tab> / <S-Tab>
-              ["<Tab>"] = function(prompt_bufnr)
-                actions.toggle_selection(prompt_bufnr)
-                actions.move_selection_next(prompt_bufnr)
-              end,
-              ["<S-Tab>"] = function(prompt_bufnr)
-                actions.toggle_selection(prompt_bufnr)
-                actions.move_selection_previous(prompt_bufnr)
-              end,
-              -- Send selected entries to Quickfix
-              ["<C-s>"] = function(prompt_bufnr)
-                local picker = action_state.get_current_picker(prompt_bufnr)
-                local multi_selection = picker:get_multi_selection()
-                if vim.tbl_isempty(multi_selection) then
-                  -- If nothing selected, use current entry
-                  local entry = action_state.get_selected_entry()
-                  multi_selection = { entry }
-                end
-                actions.send_selected_to_qflist(prompt_bufnr)
-                actions.open_qflist(prompt_bufnr)
-                actions.close(prompt_bufnr)
-              end,
-            },
+    opts = {
+      defaults = {
+        mappings = {
+          i = {
+            -- Send all search results to Quickfix list with <C-q>
+            ["<C-q>"] = require("telescope.actions").send_to_qflist + require("telescope.actions").open_qflist,
+            -- Multi-select with <Tab> / <S-Tab>
+            ["<Tab>"] = function(prompt_bufnr)
+              require("telescope.actions").toggle_selection(prompt_bufnr)
+              require("telescope.actions").move_selection_next(prompt_bufnr)
+            end,
+            ["<S-Tab>"] = function(prompt_bufnr)
+              require("telescope.actions").toggle_selection(prompt_bufnr)
+              require("telescope.actions").move_selection_previous(prompt_bufnr)
+            end,
+            -- Send selected entries to Quickfix
+            ["<C-s>"] = function(prompt_bufnr)
+              local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+              local multi_selection = picker:get_multi_selection()
+              if vim.tbl_isempty(multi_selection) then
+                -- If nothing selected, use current entry
+                local entry = require("telescope.actions.state").get_selected_entry()
+                multi_selection = { entry }
+              end
+              require("telescope.actions").send_selected_to_qflist(prompt_bufnr)
+              require("telescope.actions").open_qflist(prompt_bufnr)
+              require("telescope.actions").close(prompt_bufnr)
+            end,
           },
         },
-      })
+        layout_config = {
+          prompt_position = "top", -- Moves the prompt to the top
+        },
+        sorting_strategy = "ascending", -- Ensures results list starts from top
+      },
+    },
+    config = function(_, opts)
+      local telescope = require("telescope")
+      telescope.setup(opts)
 
       -- If you installed telescope-fzf-native, load it:
       pcall(telescope.load_extension, "fzf")

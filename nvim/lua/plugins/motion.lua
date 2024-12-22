@@ -1,5 +1,14 @@
 -- nvim/lua/plugins/motion.lua
 return {
+  -- Add hardtime.nvim plugin
+  {
+    "m4xshen/hardtime.nvim",
+    dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
+    opts = {
+      disabled_filetypes = { "qf", "netrw", "NvimTree", "lazy", "mason", "oil" },
+    },
+  },
+
   -- Spider.nvim: Smarter w/b/e motions (camelCase-aware, etc.)
   {
     "chrisgrieser/nvim-spider",
