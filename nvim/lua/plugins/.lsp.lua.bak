@@ -1,0 +1,185 @@
+---@diagnostic disable: missing-fields
+return {
+  -- 1) LSP Servers
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      diagnostics = {
+        virtual_text = { prefix = "icons" },
+      },
+      capabilities = {
+        workspace = {
+          didChangeWatchedFiles = {
+            dynamicRegistration = false,
+          },
+        },
+      },
+      ---@type lspconfig.options
+      servers = {
+        -- Lua
+        lua_ls = {
+          settings = {
+            Lua = {
+              hover = { expandAlias = false },
+              type = {
+                castNumberToInteger = true,
+                inferParamType = true,
+              },
+              diagnostics = {
+                disable = { "incomplete-signature-doc", "trailing-space" },
+                groupSeverity = {
+                  strong = "Warning",
+                  strict = "Warning",
+                },
+                groupFileStatus = {
+                  ["ambiguity"] = "Opened",
+                  ["await"] = "Opened",
+                  ["codestyle"] = "None",
+                  ["duplicate"] = "Opened",
+                  ["global"] = "Opened",
+                  ["luadoc"] = "Opened",
+                  ["redefined"] = "Opened",
+                  ["strict"] = "Opened",
+                  ["strong"] = "Opened",
+                  ["type-check"] = "Opened",
+                  ["unbalanced"] = "Opened",
+                  ["unused"] = "Opened",
+                },
+                unusedLocalExclude = { "_*" },
+              },
+            },
+          },
+        },
+
+        -- TypeScript / JavaScript
+        tsserver = {
+          -- Add advanced config if needed
+        },
+
+        -- Angular
+        -- Make sure @angular/language-server is installed (npm i -g @angular/language-server)
+        angularls = {
+          -- root_dir = function(fname)
+          --   return require("lspconfig.util").root_pattern("angular.json")(fname)
+          -- end,
+        },
+      },
+    },
+  },
+
+  -- 2) Conform for Formatting
+  {
+    "stevearc/conform.nvim",
+    optional = true,
+    opts = {
+      formatters_by_ft = {
+        -- JavaScript
+        ["javascript"] = { "dprint", "prettierd", "prettier" },
+        -- React (JSX)
+        ["javascriptreact"] = { "dprint", "prettierd", "prettier" },
+        -- TypeScript
+        ["typescript"] = { "dprint", "prettierd", "prettier" },
+        -- React (TSX) / Next.js
+        ["typescriptreact"] = { "dprint", "prettierd", "prettier" },
+        -- Angular HTML or other HTML
+        ["html"] = { "prettierd", "prettier" },
+      },
+      formatters = {
+        dprint = {
+          condition = function(_, ctx)
+            return vim.fs.find({ "dprint.json" }, { path = ctx.filename, upward = true })[1]
+          end,
+        },
+        prettierd = {
+          -- If `prettierd` is installed, it will auto-run. Typically no extra config is needed.
+        },
+        prettier = {
+          -- This runs the `prettier` CLI if you prefer that instead of `prettierd`.
+          -- You could add a condition to only run if a Prettier config is found.
+          condition = function(_, ctx)
+            return vim.fs.find({
+              ".prettierrc",
+              ".prettierrc.js",
+              ".prettierrc.cjs",
+              ".prettierrc.json",
+              ".prettierrc.yml",
+              ".prettierrc.yaml",
+              "prettier.config.js",
+              "prettier.config.cjs",
+              "package.json", -- if it has a "prettier" field
+            }, { path = ctx.filename, upward = true })[1]
+          end,
+        },
+      },
+    },
+  },
+
+  -- 3) nvim-lint for Linting
+  {
+    "mfussenegger/nvim-lint",
+    opts = {
+      linters_by_ft = {
+        lua = { "selene", "luacheck" },
+        javascript = { "eslint_d" },
+        javascriptreact = { "eslint_d" },
+        typescript = { "eslint_d" },
+        typescriptreact = { "eslint_d" },
+        -- Angular typically uses the same TS/JS, so ESLint can work as well
+        html = {}, -- or Angular-specific lint if you have one
+      },
+      linters = {
+        selene = {
+          condition = function(ctx)
+            local root = LazyVim.root.get({ normalize = true })
+            if root ~= vim.uv.cwd() then
+              return false
+            end
+            return vim.fs.find({ "selene.toml" }, { path = root, upward = true })[1]
+          end,
+        },
+        luacheck = {
+          condition = function(ctx)
+            local root = LazyVim.root.get({ normalize = true })
+            if root ~= vim.uv.cwd() then
+              return false
+            end
+            return vim.fs.find({ ".luacheckrc" }, { path = root, upward = true })[1]
+          end,
+        },
+        eslint_d = {
+          cmd = "eslint_d",
+          args = { "--stdin", "--stdin-filename", "$FILENAME" },
+          sourceName = "eslint_d",
+          parseJson = {
+            errorsRoot = "[0].messages",
+            line = "line",
+            column = "column",
+            endLine = "endLine",
+            endColumn = "endColumn",
+            message = "${message} [${ruleId}]",
+            security = "severity",
+          },
+          securities = {
+            [1] = "warning",
+            [2] = "error",
+          },
+          condition = function(ctx)
+            -- Only enable if an ESLint config is found in the project
+            local root = LazyVim.root.get({ normalize = true })
+            if root ~= vim.uv.cwd() then
+              return false
+            end
+            return vim.fs.find({
+              ".eslintrc",
+              ".eslintrc.js",
+              ".eslintrc.cjs",
+              ".eslintrc.json",
+              "package.json", -- if it has an "eslintConfig" field
+            }, { path = root, upward = true })[1]
+          end,
+        },
+      },
+    },
+  },
+}
+
