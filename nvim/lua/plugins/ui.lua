@@ -1,6 +1,5 @@
--- ~/.config/nvim/lua/plugins/ui.lua
 return {
-  -- 1. dressing.nvim: Improve Neovim's UI for input and selection
+  -- dressing.nvim: Improve Neovim's UI for input and selection
   {
     "stevearc/dressing.nvim",
     event = "VeryLazy", -- Load the plugin when Neovim is idle
@@ -108,7 +107,7 @@ return {
         for _, client in ipairs(clients) do
           table.insert(names, client.name)
         end
-        return table.concat(names, ", ")
+        return "⦿ " .. table.concat(names, ", ")
       end
 
       -- Helper function to get active linters using nvim_lint
@@ -119,7 +118,7 @@ return {
         if #linters == 0 then
           return ""
         end
-        return table.concat(linters, ", ")
+        return "▣ " .. table.concat(linters, ", ")
       end
 
       -- Configure lualine
@@ -193,6 +192,40 @@ return {
         },
         extensions = {},
       })
+    end,
+  },
+
+  -- "Splash art" for opening neovim without specifying a file
+  {
+    "goolord/alpha-nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" }, -- Add dependencies if needed
+    config = function()
+      -- Initialize the dashboard theme
+      local alpha = require("alpha")
+      local dashboard = require("alpha.themes.dashboard")
+
+      vim.api.nvim_set_hl(0, "AlphaHeader", { fg = "#7dcfff" }) -- Example: Blue text color
+      vim.api.nvim_set_hl(0, "AlphaButtons", { fg = "#bb9af7" }) -- Example: Purple text for buttons
+
+      -- Apply the highlight group to the header
+      dashboard.section.header.opts.hl = "AlphaHeader"
+
+      -- Customize the dashboard header
+      dashboard.section.header.val = [[
+        _                ___       _.--.
+        \`.|\..----...-'`   `-._.-'_.-'`
+        /  ' `         ,       __.--'
+        )/' _/     \   `-_,   /
+        `-'" `"\_  ,_.-;_.-\_ ',     
+            _.-'_./   {_.'   ; /
+bug.       {_.-``-'         {_/
+      ]]
+
+      -- Optionally customize the buttons (emptying them as per your original config)
+      dashboard.section.buttons.val = {}
+
+      -- Set up the alpha with the customized dashboard
+      alpha.setup(dashboard.opts)
     end,
   },
 }

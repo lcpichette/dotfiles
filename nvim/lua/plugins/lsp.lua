@@ -1,124 +1,267 @@
--- lua/plugins/lsp.lua
 return {
-  -- Conform for formatting
+  -- dressing.nvim: Improve Neovim's UI for input and selection
   {
-    "stevearc/conform.nvim",
-    event = "BufReadPre",
+    "stevearc/dressing.nvim",
+    event = "VeryLazy", -- Load the plugin when Neovim is idle
     opts = {
-      format_on_save = {
-        -- optional settings:
-        timeout_ms = 2000, -- increase if needed
-        lsp_fallback = true, -- if no Conform formatter is available, try LSP
-        format_on_type = false,
+      -- Customize the UI components
+      input = {
+        -- Default options for input UI
+        enabled = true,
+        default_prompt = "➤ ",
+        prompt_align = "left",
+        insert_only = true,
+        start_in_insert = true,
+        relative = "editor",
+        prefer_width = 60,
+        width = nil,
+        max_width = nil,
+        min_width = 20,
+        border = "rounded",
+        anchor = "NW",
+        pos = "100%",
+        row = 1,
+        col = 1,
       },
-      formatters_by_ft = {
-        lua = { "stylua" },
-        javascript = { "dprint", "prettierd", "prettier" },
-        javascriptreact = { "dprint", "prettierd", "prettier" },
-        typescript = { "dprint", "prettierd", "prettier" },
-        typescriptreact = { "dprint", "prettierd", "prettier" },
-        angular = { "dprint", "prettierd", "prettier" },
-        nextjs = { "dprint", "prettierd", "prettier" },
+      select = {
+        -- Default options for select UI
+        enabled = true,
+        backend = { "telescope", "builtin" },
+        builtin = {
+          -- Customize the selection UI
+          border = "rounded",
+          -- Position the selection window at the top
+          anchor = "NW",
+          -- Optional: Adjust the position offset
+          post = "100%",
+        },
       },
-      -- Optionally, you can customize other Conform settings here
-      -- e.g., format_on_save = true
     },
     config = function(_, opts)
-      require("conform").setup(opts)
+      require("dressing").setup(opts)
     end,
   },
 
-  -- nvim-lint for linting
+  -- Mason setup for LSP installation and configuration
   {
-    "mfussenegger/nvim-lint",
-    event = { "BufReadPre", "BufNewFile" },
+    "williamboman/mason.nvim",
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "williamboman/mason-lspconfig.nvim",
+    },
     config = function()
-      local lint = require("lint")
+      require("mason").setup()
+      require("mason-lspconfig").setup({
+        ensure_installed = { "lua_ls", "tsserver" }, -- Automatically install Lua and TypeScript LSPs
+      })
 
-      -- Configure linters by filetype
-      lint.linters_by_ft = {
-        lua = { "selene" },
-        javascript = { "eslint_d" },
-        javascriptreact = { "eslint_d" },
-        typescript = { "eslint_d" },
-        typescriptreact = { "eslint_d" },
-        angular = { "dprint", "prettierd", "prettier" },
-        nextjs = { "dprint", "prettierd", "prettier" },
-      }
-
-      -- Optionally, you can trigger lint on various autocmd events
-      -- selene: allow(undefined_variable)
-      vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave", "BufReadPost" }, {
-        callback = function()
-          lint.try_lint()
+      -- Automatically configure servers via mason-lspconfig and nvim-lspconfig
+      local lspconfig = require("lspconfig")
+      require("mason-lspconfig").setup_handlers({
+        function(server_name) -- Default handler for all servers
+          lspconfig[server_name].setup({})
+        end,
+        -- Custom handler for lua-language-server
+        ["lua_ls"] = function()
+          lspconfig.lua_ls.setup({
+            settings = {
+              Lua = {
+                runtime = { version = "LuaJIT" },
+                diagnostics = { globals = { "vim" } },
+                workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+                telemetry = { enable = false },
+              },
+            },
+          })
+        end,
+        -- Custom handler for tsserver (TypeScript and JavaScript support)
+        ["tsserver"] = function()
+          lspconfig.tsserver.setup({
+            settings = {
+              javascript = {
+                suggest = {
+                  autoImports = true,
+                },
+              },
+              typescript = {
+                suggest = {
+                  autoImports = true,
+                },
+              },
+            },
+          })
         end,
       })
     end,
   },
 
-  -- treesitter for advanced code highlighting
+  -- lualine, bottom status line
   {
-    "nvim-treesitter/nvim-treesitter",
-    event = { "BufReadPre", "BufNewFile" }, -- Load on buffer read or new file
-    build = ":TSUpdate", -- Automatically update parsers when installing
+    "nvim-lualine/lualine.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-      require("nvim-treesitter.configs").setup({
-        -- List of languages to ensure are installed
-        ensure_installed = {
-          "lua",
-          "javascript",
-          "typescript",
-          "tsx",
-          "vim",
-          "vimdoc",
-          "json",
-          "luadoc",
-          "markdown",
-          "markdown_inline",
-          "nix",
-          "regex",
-          "scss",
-          "zig",
-          "norg",
-          "html",
-          "comment",
+      local lualine = require("lualine")
+
+      -- Define Oxocarbon color palette
+      local oxo = {
+        fg = "#c0caf5", -- Default foreground
+        purple = "#bb9af7", -- Purple
+        blue = "#7aa2f7", -- Blue
+        green = "#7dcfff", -- Green for LSP
+        red = "#f7768e", -- Red for diagnostics
+      }
+
+      -- Custom lualine theme with no background colors
+      local custom_theme = {
+        normal = {
+          a = { fg = oxo.purple, gui = "bold" },
+          b = { fg = oxo.fg },
+          c = { fg = oxo.fg },
         },
-
-        -- Automatically install missing parsers when entering buffer
-        auto_install = true,
-
-        highlight = {
-          enable = true, -- Enable syntax highlighting
-          additional_vim_regex_highlighting = false, -- Disable Vim's regex-based highlighting
+        insert = { a = { fg = oxo.blue, gui = "bold" } },
+        visual = { a = { fg = oxo.purple, gui = "bold" } },
+        replace = { a = { fg = oxo.red, gui = "bold" } },
+        inactive = {
+          a = { fg = oxo.fg },
+          b = { fg = oxo.fg },
+          c = { fg = oxo.fg },
         },
+      }
 
-        indent = {
-          enable = true, -- Enable indentation based on Treesitter
+      -- Helper function to get active LSP servers
+      local function lsp_info()
+        local clients = vim.lsp.get_active_clients({ bufnr = 0 })
+        if #clients == 0 then
+          return ""
+        end
+        local names = {}
+        for _, client in ipairs(clients) do
+          table.insert(names, client.name)
+        end
+        return "⦿ " .. table.concat(names, ", ")
+      end
+
+      -- Helper function to get active linters using nvim_lint
+      local function linters_info()
+        local lint = require("lint")
+        local filetype = vim.bo.filetype
+        local linters = lint.linters_by_ft[filetype] or {}
+        if #linters == 0 then
+          return ""
+        end
+        return "▣ " .. table.concat(linters, ", ")
+      end
+
+      -- Configure lualine
+      lualine.setup({
+        options = {
+          theme = custom_theme,
+          section_separators = "",
+          component_separators = "",
+          disabled_filetypes = { statusline = {}, winbar = {} },
+          always_divide_middle = false,
+          globalstatus = true, -- Requires Neovim 0.7+
         },
-
-        incremental_selection = {
-          enable = true,
-          keymaps = {
-            init_selection = "gnn",
-            node_incremental = "grn",
-            scope_incremental = "grc",
-            node_decremental = "grm",
+        sections = {
+          -- Left sections
+          lualine_a = {
+            {
+              "mode",
+              fmt = function(mode)
+                return mode:sub(1, 1)
+              end,
+              color = { fg = oxo.purple, gui = "bold" },
+            },
           },
+          lualine_b = { "branch" },
+          -- Center is empty for minimalism
+          lualine_c = {},
+          -- Right sections
+          lualine_x = {
+            {
+              "filename",
+              path = 1, -- Relative path
+              symbols = { modified = " ●", readonly = " 🔒", unnamed = "[No Name]" },
+            },
+          },
+          lualine_y = {
+            {
+              "diagnostics",
+              sources = { "nvim_lsp" },
+              symbols = {
+                error = "✗ ",
+                warn = "▲ ",
+                info = "i ",
+                hint = "☀ ",
+              },
+              diagnostics_color = {
+                color_error = { fg = oxo.red },
+                color_warn = { fg = oxo.purple },
+                color_info = { fg = oxo.blue },
+                color_hint = { fg = oxo.green },
+              },
+            },
+            {
+              function()
+                return lsp_info()
+              end,
+              icon = "\xef\x84\x85 ",
+              color = { fg = oxo.green },
+            },
+            {
+              function()
+                return linters_info()
+              end,
+              icon = "\xe2\x9a\x99\xef\xb8\x8f ",
+              color = { fg = oxo.blue },
+            },
+          },
+          lualine_z = {},
         },
-
-        -- Additional modules can be enabled as needed
-        -- For example, textobjects, refactor, etc.
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_c = { "filename" },
+          lualine_x = { "location" },
+          lualine_y = {},
+          lualine_z = {},
+        },
+        extensions = {},
       })
     end,
   },
 
-  -- Newline tabbing *just-working*
+  -- "Splash art" for opening neovim without specifying a file
   {
-    "tpope/vim-sleuth",
-    lazy = false, -- Load immediately as it's essential for indentation
+    "goolord/alpha-nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" }, -- Add dependencies if needed
     config = function()
-      -- vim-sleuth works out-of-the-box; no additional configuration needed
-      -- However, if you need to customize, you can add settings here
+      -- Initialize the dashboard theme
+      local alpha = require("alpha")
+      local dashboard = require("alpha.themes.dashboard")
+
+      vim.api.nvim_set_hl(0, "AlphaHeader", { fg = "#7dcfff" }) -- Example: Blue text color
+      vim.api.nvim_set_hl(0, "AlphaButtons", { fg = "#bb9af7" }) -- Example: Purple text for buttons
+
+      -- Apply the highlight group to the header
+      dashboard.section.header.opts.hl = "AlphaHeader"
+
+      -- Customize the dashboard header
+      dashboard.section.header.val = [[
+        _                ___       _.--.
+        \`.|\..----...-'`   `-._.-'_.-'`
+        /  ' `         ,       __.--'
+        )/' _/     \   `-_,   /
+        `-\'" `"\_  ,_.-;_.-\_ ',     
+            _.-'_./   {_.'   ; /
+bug.       {_.-``-'         {_/
+      ]]
+
+      -- Optionally customize the buttons (emptying them as per your original config)
+      dashboard.section.buttons.val = {}
+
+      -- Set up the alpha with the customized dashboard
+      alpha.setup(dashboard.opts)
     end,
   },
 }
