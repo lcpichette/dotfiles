@@ -4,6 +4,11 @@ return {
   {
     "chrisgrieser/nvim-spider",
     event = "BufReadPre",
+    keys = {
+			"e",
+			"<cmd>lua require('spider').motion('e')<CR>",
+			mode = { "n", "o", "x" },
+		},
     config = function()
       require("spider").setup({
         -- your config here, see docs for options

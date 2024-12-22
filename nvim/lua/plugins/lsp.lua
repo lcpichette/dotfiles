@@ -1,4 +1,40 @@
 return {
+  -- Conform for file formatting
+  {
+    "stevearc/conform.nvim",
+    event = "BufReadPre",
+    opts = {
+      -- Enable format on save
+      format_on_save = {
+        enabled = true,
+        timeout_ms = 2000, -- Time in milliseconds before format times out
+        lsp_fallback = true, -- Fallback to LSP formatting if no formatter is found
+      },
+      -- Specify formatters by filetype
+      formatters_by_ft = {
+        lua = { "stylua" }, -- Use Stylua for Lua files
+
+        -- JavaScript, TypeScript, etc.
+        javascript = { "dprint", "prettierd", "prettier" },
+        javascriptreact = { "dprint", "prettierd", "prettier" },
+        typescript = { "dprint", "prettierd", "prettier" },
+        typescriptreact = { "dprint", "prettierd", "prettier" },
+        angular = { "dprint", "prettierd", "prettier" },
+        nextjs = { "dprint", "prettierd", "prettier" },
+      },
+      -- Override default formatter configurations if necessary
+      formatters = {
+        stylua = {
+          command = "stylua",
+          stdin = true, -- Enable reading from stdin
+        },
+      },
+    },
+    config = function(_, opts)
+      require("conform").setup(opts)
+    end,
+  },
+
   -- dressing.nvim: Improve Neovim's UI for input and selection
   {
     "stevearc/dressing.nvim",
@@ -52,7 +88,7 @@ return {
     config = function()
       require("mason").setup()
       require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "tsserver" }, -- Automatically install Lua and TypeScript LSPs
+        ensure_installed = { "lua_ls", "ts_ls" }, -- Automatically install Lua and TypeScript LSPs
       })
 
       -- Automatically configure servers via mason-lspconfig and nvim-lspconfig
@@ -74,9 +110,9 @@ return {
             },
           })
         end,
-        -- Custom handler for tsserver (TypeScript and JavaScript support)
-        ["tsserver"] = function()
-          lspconfig.tsserver.setup({
+        -- Custom handler for ts_ls (used to be tsserver) (TypeScript and JavaScript support)
+        ["ts_ls"] = function()
+          lspconfig.ts_ls.setup({
             settings = {
               javascript = {
                 suggest = {
@@ -101,6 +137,22 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       local lualine = require("lualine")
+
+      -- Helper function to abbreviate the folder path
+      local function abbreviate_path(filepath)
+        local parts = vim.split(filepath, "/")
+        for i = 1, #parts - 1 do
+          parts[i] = parts[i]:sub(1, 2) -- Keep only the first 2 characters of each folder
+        end
+        return table.concat(parts, "/")
+      end
+
+      -- Custom filename component with abbreviated folders
+      local function custom_filename()
+        local filepath = vim.fn.expand("%:p") -- Full file path
+        local relative_path = vim.fn.fnamemodify(filepath, ":~:.:") -- Relative to cwd
+        return abbreviate_path(relative_path)
+      end
 
       -- Define Oxocarbon color palette
       local oxo = {
@@ -179,8 +231,7 @@ return {
           -- Right sections
           lualine_x = {
             {
-              "filename",
-              path = 1, -- Relative path
+              custom_filename,
               symbols = { modified = " ●", readonly = " 🔒", unnamed = "[No Name]" },
             },
           },
@@ -228,40 +279,6 @@ return {
         },
         extensions = {},
       })
-    end,
-  },
-
-  -- "Splash art" for opening neovim without specifying a file
-  {
-    "goolord/alpha-nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" }, -- Add dependencies if needed
-    config = function()
-      -- Initialize the dashboard theme
-      local alpha = require("alpha")
-      local dashboard = require("alpha.themes.dashboard")
-
-      vim.api.nvim_set_hl(0, "AlphaHeader", { fg = "#7dcfff" }) -- Example: Blue text color
-      vim.api.nvim_set_hl(0, "AlphaButtons", { fg = "#bb9af7" }) -- Example: Purple text for buttons
-
-      -- Apply the highlight group to the header
-      dashboard.section.header.opts.hl = "AlphaHeader"
-
-      -- Customize the dashboard header
-      dashboard.section.header.val = [[
-        _                ___       _.--.
-        \`.|\..----...-'`   `-._.-'_.-'`
-        /  ' `         ,       __.--'
-        )/' _/     \   `-_,   /
-        `-\'" `"\_  ,_.-;_.-\_ ',     
-            _.-'_./   {_.'   ; /
-bug.       {_.-``-'         {_/
-      ]]
-
-      -- Optionally customize the buttons (emptying them as per your original config)
-      dashboard.section.buttons.val = {}
-
-      -- Set up the alpha with the customized dashboard
-      alpha.setup(dashboard.opts)
     end,
   },
 }
