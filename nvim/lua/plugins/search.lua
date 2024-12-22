@@ -138,4 +138,27 @@ return {
     },
     opts = {},
   },
+
+  -- OIL: Better file searching and manipulation
+  {
+    "stevearc/oil.nvim",
+    config = function()
+      require("oil").setup({
+        -- Customize your configuration here
+        view_options = {
+          show_hidden = true, -- Show hidden files
+        },
+      })
+
+      -- Automatically open `oil.nvim` for directories
+      vim.api.nvim_create_autocmd("VimEnter", {
+        callback = function()
+          local path = vim.fn.expand("%:p")
+          if vim.fn.isdirectory(path) == 1 then
+            require("oil").open()
+          end
+        end,
+      })
+    end,
+  },
 }
