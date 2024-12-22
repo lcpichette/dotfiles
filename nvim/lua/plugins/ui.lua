@@ -1,3 +1,4 @@
+-- Plugins specific to altering the UI of neovim
 return {
   -- dressing.nvim: Improve Neovim's UI for input and selection
   {
@@ -227,5 +228,77 @@ bug.       {_.-``-'         {_/
       -- Set up the alpha with the customized dashboard
       alpha.setup(dashboard.opts)
     end,
+  },
+
+  -- Changes alerts, command line aesthetic and location, and some other ui things
+
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    opts = {
+      cmdline = {
+        enabled = true,
+        view = "cmdline", -- Use the classic cmdline view
+        opts = {
+          position = {
+            row = 0, -- Position at the very top
+            col = 2, -- Align to the left
+          },
+          size = {
+            width = "80%", -- Extend across the width of the buffer
+            height = 1, -- Keep it one line tall
+          },
+        },
+        format = {
+          cmdline = { pattern = "^:", icon = "", lang = "vim" },
+          search_down = { kind = "search", pattern = "^/", icon = " ", lang = "regex" },
+          search_up = { kind = "search", pattern = "^%?", icon = " ", lang = "regex" },
+          filter = { pattern = "^:%s*!", icon = "$", lang = "bash" },
+          lua = { pattern = { "^:%s*lua%s+", "^:%s*lua%s*=%s*", "^:%s*=%s*" }, icon = "", lang = "lua" },
+          help = { pattern = "^:%s*he?l?p?%s+", icon = "" },
+          input = { view = "cmdline", icon = "󰥻 " }, -- Classic feel
+        },
+      },
+      popupmenu = {
+        enabled = true,
+        backend = "nui",
+      },
+      messages = {
+        enabled = true,
+        view = "notify",
+      },
+      lsp = {
+        progress = {
+          enabled = true,
+          view = "mini",
+        },
+        hover = {
+          enabled = true,
+        },
+        signature = {
+          enabled = true,
+          auto_open = {
+            enabled = true,
+            trigger = true,
+            luasnip = true,
+            throttle = 50,
+          },
+        },
+      },
+      notify = {
+        enabled = true,
+        view = "notify",
+      },
+      presets = {
+        bottom_search = false, -- Disable classic bottom search
+        command_palette = false,
+        inc_rename = false,
+        lsp_doc_border = false,
+      },
+    },
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+    },
   },
 }
