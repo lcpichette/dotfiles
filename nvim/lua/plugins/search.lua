@@ -2,7 +2,7 @@ return {
   -- Telescope: Fuzzy Finder
   {
     "ibhagwan/fzf-lua",
-    cmd = "FzfLua",
+    cmd = { "Files", "Rg" },
     dependencies = {
       "nvim-tree/nvim-web-devicons", -- optional for file icons
     },
@@ -42,24 +42,39 @@ return {
     end,
   },
 
-  -- nvim-bqf: Better Quickfix window UI
+  -- Better quickfix (context lines, editable buffer, improved styling)
   {
-    "kevinhwang91/nvim-bqf",
-    ft = "qf",
-    config = function()
-      require("bqf").setup({
-        auto_enable = true,
-        preview = {
-          auto_preview = false,
-          border_chars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
-        },
-        func_map = {
-          open = "<CR>",
-          pscrollup = "<C-b>",
-          pscrolldown = "<C-f>",
-        },
-      })
-    end,
+    "stevearc/quicker.nvim",
+    event = "VeryLazy", -- Load quicker.nvim when Neovim is idle
+    opts = {
+      edit = {
+        -- Enable editing the quickfix like a normal buffer
+        enabled = true,
+        -- Set to true to write buffers after applying edits.
+        -- Set to "unmodified" to only write unmodified buffers.
+        autosave = "unmodified",
+      },
+      highlight = {
+        -- Use treesitter highlighting
+        treesitter = true,
+        -- Use LSP semantic token highlighting
+        lsp = true,
+        -- Load the referenced buffers to apply more accurate highlights (may be slow)
+        load_buffers = true,
+      },
+      keys = {},
+      borders = {
+        vert = "┃",
+        -- Strong headers separate results from different files
+        strong_header = "━",
+        strong_cross = "╋",
+        strong_end = "┫",
+        -- Soft headers separate results within the same file
+        soft_header = "╌",
+        soft_cross = "╂",
+        soft_end = "┨",
+      },
+    },
   },
 
   -- which-key: Real-time key mapping assistance
@@ -72,9 +87,36 @@ return {
     end,
   },
 
+  -- Bookmarks
+  {
+    "crusj/bookmarks.nvim",
+    keys = {
+      { "<tab><tab>", mode = { "n" } },
+    },
+    branch = "main",
+    dependencies = { "nvim-web-devicons" },
+    config = function()
+      require("bookmarks").setup()
+      require("fzf-lua").setup({
+        bookmarks = {
+          -- Customize fzf-lua's behavior for bookmarks if necessary
+        },
+      })
+
+      -- Add a custom command to trigger bookmarks with fzf-lua
+      vim.api.nvim_set_keymap(
+        "n",
+        "<tab><tab>",
+        ":lua require('fzf-lua').bookmarks()<CR>",
+        { noremap = true, silent = true }
+      )
+    end,
+  },
+
   -- Arrow: Harpoon-alternative for adding freq-acc files
   {
     "otavioschwanck/arrow.nvim",
+    event = "VeryLazy",
     dependencies = {
       { "nvim-tree/nvim-web-devicons" },
       -- or if using `mini.icons`

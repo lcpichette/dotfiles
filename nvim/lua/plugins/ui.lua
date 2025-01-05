@@ -65,20 +65,25 @@ return {
     end,
   },
 
-  -- lualine dependency
+  -- Git signs left of line numbers
   {
     "lewis6991/gitsigns.nvim",
     event = { "BufReadPre", "BufNewFile" }, -- Load on file open
     config = function()
+      -- ▉ ▊ ▋ ▌ ▍ ▎▏
+      local char = "▎"
       require("gitsigns").setup({
         signs = {
-          add = { text = "+" },
-          change = { text = "~" },
-          delete = { text = "-" },
+          add = { text = char },
+          change = { text = char },
+          delete = { text = "▁" },
         },
       })
 
-      vim.api.nvim_set_hl(0, "GitSignsAdd", { fg = "#7aa2f7" }) -- Blue
+      vim.api.nvim_set_hl(0, "GitSignsAdd", { fg = "#3DDC97" }) -- Green
+      function Foo()
+        return "baz"
+      end
       vim.api.nvim_set_hl(0, "GitSignsChange", { fg = "#bb9af7" }) -- Purple
       vim.api.nvim_set_hl(0, "GitSignsDelete", { fg = "#f7768e" }) -- Red
     end,
@@ -88,10 +93,10 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons", "lewis6991/gitsigns.nvim" },
+    event = "BufWinEnter",
     config = function()
       local lualine = require("lualine")
 
-      -- Define Oxocarbon color palette
       local oxo = {
         fg = "#edf0fc", -- Default foreground
         purple = "#bb9af7", -- Purple for edits
@@ -103,24 +108,6 @@ return {
       vim.api.nvim_set_hl(0, "LualineDiffAdd", { fg = oxo.blue })
       vim.api.nvim_set_hl(0, "LualineDiffChange", { fg = oxo.purple })
       vim.api.nvim_set_hl(0, "LualineDiffDelete", { fg = oxo.red })
-
-      -- Helper function to abbreviate the folder path
-      local function abbreviate_path(filepath)
-        local parts = vim.split(filepath, "/")
-        for i = 1, #parts - 1 do
-          parts[i] = parts[i]:sub(1, 2) -- Keep only the first 2 characters of each folder
-        end
-        return table.concat(parts, "/")
-      end
-
-      -- Custom filename component with abbreviated folders
-      local function custom_filename()
-        local filepath = vim.fn.expand("%:p") -- Full file path
-        local relative_path = vim.fn.fnamemodify(filepath, ":~:.:") -- Relative to cwd
-        return abbreviate_path(relative_path)
-      end
-
-      -- Helper function to display git diff stats
       local function git_diff()
         local gitsigns_data = vim.b.gitsigns_status_dict
         if not gitsigns_data then
@@ -139,7 +126,6 @@ return {
         )
       end
 
-      -- Helper function to get active LSP servers
       local function lsp_info()
         local clients = vim.lsp.get_active_clients({ bufnr = 0 })
         if #clients == 0 then
@@ -177,7 +163,7 @@ return {
             },
           },
           lualine_b = {
-            { custom_filename, color = { fg = oxo.fg } },
+            { "filename", color = { fg = oxo.fg } },
           },
           lualine_c = {
             {
@@ -228,51 +214,58 @@ return {
     "goolord/alpha-nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" }, -- Add dependencies if needed
     config = function()
-      -- Initialize the dashboard theme
       local alpha = require("alpha")
       local dashboard = require("alpha.themes.dashboard")
 
-      vim.api.nvim_set_hl(0, "AlphaHeader", { fg = "#7dcfff" }) -- Example: Blue text color
-      vim.api.nvim_set_hl(0, "AlphaButtons", { fg = "#bb9af7" }) -- Example: Purple text for buttons
-
-      -- Apply the highlight group to the header
-      dashboard.section.header.opts.hl = "AlphaHeader"
-
-      -- Customize the dashboard header
+      -- the dashboard header
       dashboard.section.header.val = [[
+      ⠀
         _                ___       _.--.
         \`.|\..----...-'`   `-._.-'_.-'`
-        /  ' `         ,       __.--'
+        /  ' `         ,       __.^
         )/' _/     \   `-_,   /
         `-'" `"\_  ,_.-;_.-\_ ',     
             _.-'_./   {_.'   ; /
 bug.       {_.-``-'         {_/
       ]]
 
-      -- Optionally customize the buttons (emptying them as per your original config)
-      dashboard.section.buttons.val = {}
+      dashboard.section.buttons.val = {
+        dashboard.button("f", "  Find Files", ":FzfLua files<CR>"),
+        dashboard.button("w", "  Live Grep", ":FzfLua live_grep<CR>"),
+        dashboard.button("r", "  Resume Search", ":FzfLua live_grep<CR>"),
+        dashboard.button("b", "  Open Buffers", ":FzfLua buffers<CR>"),
+        dashboard.button("h", "?  Help Tags", ":FzfLua help_tags<CR>"),
+        dashboard.button("q", "  Quit", ":qa<CR>"),
+      }
 
-      -- Set up the alpha with the customized dashboard
+      -- center content
+      dashboard.config.layout = {
+        { type = "padding", val = 8 }, -- Add top padding
+        dashboard.section.header,
+        { type = "padding", val = 2 }, -- Space between header and buttons
+        dashboard.section.buttons,
+        { type = "padding", val = 2 }, -- Add some padding after buttons
+      }
+
       alpha.setup(dashboard.opts)
     end,
   },
 
   -- Changes alerts, command line aesthetic and location, and some other ui things
-
   {
     "folke/noice.nvim",
     event = "VeryLazy",
     opts = {
       cmdline = {
         enabled = true,
-        view = "cmdline", -- Use the classic cmdline view
+        view = "cmdline",
         opts = {
           position = {
             row = 0, -- Position at the very top
             col = 2, -- Align to the left
           },
           size = {
-            width = "80%", -- Extend across the width of the buffer
+            width = "80%",
             height = 1, -- Keep it one line tall
           },
         },
@@ -327,5 +320,29 @@ bug.       {_.-``-'         {_/
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",
     },
+  },
+
+  -- Show keys while typing
+  {
+    "nvzone/showkeys",
+    cmd = "ShowkeysToggle",
+    opts = {
+      timeout = 1,
+      maxkeys = 5,
+      show_count = true,
+    },
+  },
+
+  -- Neogit for ui Git interactions
+  {
+    "NeogitOrg/neogit",
+    cmd = "Neogit", -- Defer loading until command
+    enabled = false,
+    dependencies = {
+      "nvim-lua/plenary.nvim", -- required
+      "sindrets/diffview.nvim", -- optional - Diff integration
+      "ibhagwan/fzf-lua", -- optional
+    },
+    config = true,
   },
 }

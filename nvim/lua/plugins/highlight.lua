@@ -22,6 +22,7 @@ return {
 
   {
     "HiPhish/rainbow-delimiters.nvim",
+    enabled = false,
     config = function()
       local rainbow_delimiters = require("rainbow-delimiters")
       -- Optional: Customize the plugin's settings here
@@ -54,9 +55,15 @@ return {
   {
     "folke/todo-comments.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
-    opts = {},
-    keys = {
-      { "<leader>ft", "<cmd>TodoTelescope<cr>", desc = "Find TODOs" },
+    opts = {
+      keywords = {
+        FIX = { icon = " ", color = "error", alt = { "BUG", "FIXME" } },
+        TODO = { icon = " ", color = "info" },
+        HACK = { icon = " ", color = "warning" },
+        WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
+        PERF = { icon = " ", color = "hint", alt = { "OPTIMIZE" } },
+        NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+      },
     },
   },
 }
