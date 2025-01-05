@@ -35,8 +35,10 @@ selection-foreground = #f2f4f8
 # Fonts
 font-size = 18
 
-font-family = "FiraCode Nerd Font Mono"
-font-family = "Fira Code"
+# font-family = "FiraCode Nerd Font Mono"
+# font-family = "Fira Code" Variable
+# font-family = "Berkeley Mono Variable"
+font-family = "TX-02" # Compiled Berkeley Mono
 
 font-feature = +liga
 font-feature = -dlig
@@ -52,4 +54,12 @@ font-feature = -onum
 window-padding-y = 10,0
 macos-titlebar-style = hidden
 window-save-state = always
+window-height=510
+window-width=1640
+
+# Icon
+macos-icon = custom-style
+macos-icon-ghost-color = #BE95FF
+macos-icon-screen-color = #161616
+macos-icon-frame = plastic
 
