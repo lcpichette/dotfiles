@@ -1,3 +1,5 @@
+set FILE_MANAGER "DEFAULT"
+
 set -g fish_color_option blue
 fish_vi_key_bindings
 
@@ -87,45 +89,43 @@ if not string match -q -- $PNPM_HOME $PATH
 end
 # pnpm end
 
-# Default Yazi (file manager)
-#function y
-#	set tmp (mktemp -t "yazi-cwd.XXXXXX")
-#	yazi $argv --cwd-file="$tmp"
-#	if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
-#		builtin cd -- "$cwd"
-#	end
-#	rm -f -- "$tmp"
-#end
-
-if status --is-interactive
-    y
+function openYazi
+	set tmp (mktemp -t "yazi-cwd.XXXXXX")
+	yazi $argv --cwd-file="$tmp"
+	if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
+		builtin cd -- "$cwd"
+	end
+	rm -f -- "$tmp"
 end
 
-
-# # Default ranger
-# function open
-#   if test -d $argv[1]
-#     ranger $argv[1]
-#   else
-#     command open $argv
-#   end
-# end
-#
-# if status --is-interactive
-#     ranger
-# end
-#
+function openRanger
+  if test -d $argv[1]
+    ranger $argv[1]
+  else
+    command open $argv
+  end
+end
 
 # Default Xplr
-function open
+function openXplr
     if test -d $argv[1]
         xplr $argv[1]
     else
         command open $argv
     end
 end
+
+function open
+    if $FILE_MANAGER == "ranger"
+        openRanger
+    else if $FILE_MANAGER == "yazi"
+        openYazi
+    else
+        openXplr
+    end
+end
 if status --is-interactive
-    xplr
+    open
 end
 
 function vv
@@ -140,6 +140,10 @@ function vv
 
     # Open Neovim with the selected config
     env NVIM_APPNAME=(basename $config) nvim $argv
+end
+
+function fish_user_key_bindings
+    bind \cf accept-autosuggestion
 end
 
 fish_add_path /Users/lucaspichette/.spicetify
