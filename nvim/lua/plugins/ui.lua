@@ -81,9 +81,6 @@ return {
       })
 
       vim.api.nvim_set_hl(0, "GitSignsAdd", { fg = "#3DDC97" }) -- Green
-      function Foo()
-        return "baz"
-      end
       vim.api.nvim_set_hl(0, "GitSignsChange", { fg = "#bb9af7" }) -- Purple
       vim.api.nvim_set_hl(0, "GitSignsDelete", { fg = "#f7768e" }) -- Red
     end,
