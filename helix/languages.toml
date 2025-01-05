@@ -1,0 +1,79 @@
+[language-server.scls]
+command = "simple-completion-language-server"
+
+[language-server.scls.config]
+max_completion_items = 20    # set max completion results len for each group: words, snippets, unicode-input
+snippets_first = true        # completions will return before snippets by default
+feature_words = true         # enable completion by word
+feature_snippets = true      # enable snippets
+feature_unicode_input = true # enable "unicode input"
+feature_paths = true         # enable path completion
+
+[[sources]] # list of sources to load
+name = "friendly-snippets"                                  # optional name shown on snippet description
+git = "https://github.com/rafamadriz/friendly-snippets.git" # git repo with snippets collections
+
+[[language]]
+name = "rust"
+
+[language-server.rust-analyzer.config]
+check = { command = "clippy", features = "all" }
+diagnostics = { experimental = { enable = true } }
+hover = { actions = { enable = true } }
+typing = { autoClosingAngleBrackets = { enable = true } }
+cargo = { allFeatures = true }
+procMacro = { enable = true }
+
+
+[[language]]
+name = "json"
+language-servers = ["vscode-json-language-server"]
+formatter = { command = 'npx', args = ["prettier", "--parser", "json"] }
+auto-format = true
+
+
+
+# [[language]]
+# name = "angular"
+# scope = "*.component.ts,*.component.html"
+# file-types = ["ts", "html"]
+# language-servers = ["angular-language-server"]
+
+
+[[language]]
+name = "lua"
+scope = "*.lua"
+file-types = ["lua"]
+language-servers = ["lua-language-server"]
+
+# --- FRONT-END
+
+[language-server.eslint]
+command = "vscode-eslint-language-server"
+
+[language-server.eslint.config]
+codeActionsOnSave = { mode = "all", "source.fixAll.eslint" = true }
+quiet = false
+validate = "on" # I assume this enabled eslit to validate the file, which now shows me counts for errors, warnings, etc in helix
+rulesCustomizations = []
+run = "onType"
+problems = { shortenToSingleLine = false }
+
+[language-server.eslint.config.codeAction]
+[language-server.eslint.config.codeAction.disableRuleComment]
+enable = true
+location = "separateLine"
+
+[language-server.eslint.config.codeActionOnSave]
+enable = true
+mode = "fixAll"
+
+[[language]]
+name = "typescript"
+formatter = { command = "prettier" }
+auto-format = true
+
+[[language]]
+name = "tsx"
+formatter = { command = "prettier" } # works without any args, the modifications end up in the buffer, unsaved
+auto-format = true
