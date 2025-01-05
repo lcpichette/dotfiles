@@ -1,8 +1,0 @@
-[13:43:03 2024-12-01] FETCHING Version 2.38.5
-[13:43:03 2024-12-01] DOWNLOADING https://github.com/spicetify/cli/releases/download/v2.38.5/spicetify-2.38.5-darwin-arm64.tar.gz
-[13:43:04 2024-12-01] EXTRACTING /Users/lucaspichette/.spicetify/spicetify.tar.gz
-[13:43:04 2024-12-01] SETTING EXECUTABLE PERMISSIONS TO /Users/lucaspichette/.spicetify/spicetify
-[13:43:04 2024-12-01] REMOVING /Users/lucaspichette/.spicetify/spicetify.tar.gz
-[13:43:04 2024-12-01] spicetify path already set in /Users/lucaspichette/.config/fish/config.fish, continuing...
-[13:43:04 2024-12-01] spicetify v2.38.5 was installed successfully to /Users/lucaspichette/.spicetify
-[13:43:04 2024-12-01] Run 'spicetify --help' to get started
