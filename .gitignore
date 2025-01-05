@@ -12,6 +12,9 @@
 !nvim_bak/
 !nvim_bak/**
 
+!helix/
+!helix/**
+
 !zellij/
 !zellij/**
 

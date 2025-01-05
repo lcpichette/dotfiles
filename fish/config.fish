@@ -88,14 +88,14 @@ end
 # pnpm end
 
 # Default Yazi (file manager)
-function y
-	set tmp (mktemp -t "yazi-cwd.XXXXXX")
-	yazi $argv --cwd-file="$tmp"
-	if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
-		builtin cd -- "$cwd"
-	end
-	rm -f -- "$tmp"
-end
+#function y
+#	set tmp (mktemp -t "yazi-cwd.XXXXXX")
+#	yazi $argv --cwd-file="$tmp"
+#	if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
+#		builtin cd -- "$cwd"
+#	end
+#	rm -f -- "$tmp"
+#end
 
 if status --is-interactive
     y
@@ -116,6 +116,18 @@ end
 # end
 #
 
+# Default Xplr
+function open
+    if test -d $argv[1]
+        xplr $argv[1]
+    else
+        command open $argv
+    end
+end
+if status --is-interactive
+    xplr
+end
+
 function vv
     # Assumes all configs exist in directories named ~/.config/nvim-*
     set config (fd --max-depth 1 --glob 'nvim-*' ~/.config | fzf --prompt="Neovim Configs > " --height=50% --layout=reverse --border --exit-0)
@@ -129,6 +141,5 @@ function vv
     # Open Neovim with the selected config
     env NVIM_APPNAME=(basename $config) nvim $argv
 end
-
 
 fish_add_path /Users/lucaspichette/.spicetify
