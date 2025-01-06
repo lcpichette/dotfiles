@@ -1,4 +1,4 @@
-set FILE_MANAGER "DEFAULT"
+set FILE_MANAGER oil
 
 set -g fish_color_option blue
 fish_vi_key_bindings
@@ -106,22 +106,24 @@ function openRanger
   end
 end
 
-# Default Xplr
 function openXplr
-    if test -d $argv[1]
-        xplr $argv[1]
-    else
-        command open $argv
-    end
+    xplr $argv[1]
 end
 
+function openOil
+    nvim .
+end
+
+
 function open
-    if $FILE_MANAGER == "ranger"
+    if test $FILE_MANAGER = "ranger"
         openRanger
-    else if $FILE_MANAGER == "yazi"
+    else if test $FILE_MANAGER = "yazi"
         openYazi
-    else
+    else if test $FILE_MANAGER = "xplr"
         openXplr
+    else if test $FILE_MANAGER = "oil"
+        openOil
     end
 end
 if status --is-interactive
