@@ -1,3 +1,5 @@
+local CONFIG = require("oxo_config")
+
 return {
   {
     "saghen/blink.cmp",
@@ -5,6 +7,7 @@ return {
     dependencies = "rafamadriz/friendly-snippets",
 
     version = "*",
+    event = { "InsertEnter", "CmdlineEnter" },
     -- If you use nix, you can build from source using latest nightly rust with:
     -- build = 'nix run .#build-plugin',
 
@@ -21,6 +24,7 @@ return {
         return not vim.tbl_contains({ "markdown" }, vim.bo.filetype)
           and vim.bo.buftype ~= "prompt"
           and vim.b.completion ~= false
+          and CONFIG.autocomplete.blink ~= false
       end,
 
       completion = {
@@ -74,6 +78,8 @@ return {
 
   {
     "neovim/nvim-lspconfig",
+    enabled = CONFIG.lsp,
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
       local lspconfig = require("lspconfig")
 
@@ -141,8 +147,16 @@ return {
     end,
   },
 
+  -- Better UI for `K`, `gD`, etc.
+  {
+    "dnlhc/glance.nvim",
+    cmd = "Glance",
+    enabled = CONFIG.fancyLSPPreviews,
+  },
+
   {
     "mfussenegger/nvim-lint",
+    enabled = CONFIG.lint,
     config = function()
       local lint = require("lint")
 
@@ -198,13 +212,6 @@ return {
   },
 
   {
-    "CWood-sdf/banana.nvim",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-    },
-  },
-
-  {
     "nvim-treesitter/nvim-treesitter",
     event = "BufReadPre",
     opts = {
@@ -221,22 +228,21 @@ return {
       },
       highlight = { enable = true },
     },
-    config = function()
-      require("banana").initTsParsers()
-    end,
   },
 
   -- Comment code selections easier
   {
     "numToStr/Comment.nvim",
-    opts = {},
+    config = function()
+      require("Comment").setup()
+    end,
   },
 
   -- Graphically-pleasing Search and Replace
   {
     "MagicDuck/grug-far.nvim",
     event = "VeryLazy",
-    enabled = true,
+    enabled = CONFIG.grugfar,
     config = function()
       require("grug-far").setup({
         -- options, see Configuration section below
@@ -257,9 +263,20 @@ return {
   },
 
   -- Automatically create pairs (e.g. insert `]` when you press `[`)
+  -- mini.pairs approach (~1.7ms startup)
+  {
+    "echasnovski/mini.pairs",
+    version = "*",
+    enabled = CONFIG.autopairs.mini,
+    config = function()
+      require("mini.pairs").setup()
+    end,
+  },
+  -- nvim-autopairs approach (~2.6ms startup)
   {
     "windwp/nvim-autopairs",
     event = "InsertEnter",
+    enabled = CONFIG.autopairs.autopairs,
     config = function()
       require("nvim-autopairs").setup({
         check_ts = true,
@@ -280,5 +297,14 @@ return {
     dependencies = {
       "hrsh7th/nvim-cmp",
     },
+  },
+
+  -- Note taking using neorg (NORG)
+  {
+    "nvim-neorg/neorg",
+    enabled = CONFIG.neorg,
+    lazy = false, -- Disable lazy loading as some `lazy.nvim` distributions set `lazy = true` by default
+    version = "*", -- Pin Neorg to the latest stable release
+    config = true,
   },
 }

@@ -1,3 +1,5 @@
+local CONFIG = require("oxo_config")
+
 -- Plugins specific to altering the UI of neovim
 return {
   -- dressing.nvim: Improve Neovim's UI for input and selection
@@ -47,6 +49,7 @@ return {
   {
     "j-hui/fidget.nvim",
     tag = "legacy",
+    enabled = CONFIG.lspStatusIndicators,
     config = function()
       require("fidget").setup({
         text = {
@@ -65,32 +68,20 @@ return {
     end,
   },
 
-  -- Git signs left of line numbers
+  -- statusline, bottom status line (~0.5ms startup time)
   {
-    "lewis6991/gitsigns.nvim",
-    event = { "BufReadPre", "BufNewFile" }, -- Load on file open
-    config = function()
-      -- ▉ ▊ ▋ ▌ ▍ ▎▏
-      local char = "▎"
-      require("gitsigns").setup({
-        signs = {
-          add = { text = char },
-          change = { text = char },
-          delete = { text = "▁" },
-        },
-      })
-
-      vim.api.nvim_set_hl(0, "GitSignsAdd", { fg = "#3DDC97" }) -- Green
-      vim.api.nvim_set_hl(0, "GitSignsChange", { fg = "#bb9af7" }) -- Purple
-      vim.api.nvim_set_hl(0, "GitSignsDelete", { fg = "#f7768e" }) -- Red
-    end,
+    --"beauwilliams/statusline.lua",
+    "lcpichette/statusline-oxo.nvim",
+    enabled = CONFIG.statusline.statusline,
+    event = "BufWinEnter",
   },
 
-  -- lualine, bottom status line
+  -- lualine, bottom status line (~4ms+ startup time)
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons", "lewis6991/gitsigns.nvim" },
     event = "BufWinEnter",
+    enabled = CONFIG.statusline.lualine,
     config = function()
       local lualine = require("lualine")
 
@@ -178,7 +169,7 @@ return {
             {
               "diagnostics",
               sources = { "nvim_lsp" },
-              symbols = { error = " ", warn = " ", info = " ", hint = " " },
+              symbols = { error = "" .. " ", warn = "" .. " ", info = "󰙎 ", hint = "󰌶 " },
               diagnostics_color = {
                 error = { fg = oxo.red },
                 warn = { fg = oxo.purple },
@@ -210,6 +201,7 @@ return {
   {
     "goolord/alpha-nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" }, -- Add dependencies if needed
+    enabled = CONFIG.ui.splash_art.alpha,
     config = function()
       local alpha = require("alpha")
       local dashboard = require("alpha.themes.dashboard")
@@ -226,14 +218,42 @@ return {
 bug.       {_.-``-'         {_/
       ]]
 
-      dashboard.section.buttons.val = {
-        dashboard.button("f", "  Find Files", ":FzfLua files<CR>"),
-        dashboard.button("w", "  Live Grep", ":FzfLua live_grep<CR>"),
-        dashboard.button("r", "  Resume Search", ":FzfLua live_grep<CR>"),
-        dashboard.button("b", "  Open Buffers", ":FzfLua buffers<CR>"),
-        dashboard.button("h", "?  Help Tags", ":FzfLua help_tags<CR>"),
-        dashboard.button("q", "  Quit", ":qa<CR>"),
+      local searchCommands = {
+        {
+          name = "fzf_lua",
+          commands = {
+            ":FzfLua files<CR>",
+            ":FzfLua live_grep<CR>",
+            ":FzfLua resume<CR>",
+            ":FzfLua help_tags<CR>",
+          },
+        },
+        {
+          name = "telescope",
+          commands = {
+            ":Telescope find_files<CR>",
+            ":Telescope live_grep<CR>",
+            ":Telescope resume<CR>",
+            ":Telescope help_tags<CR>",
+          },
+        },
       }
+
+      if not CONFIG.fileSearch.snap then
+        local commands
+        if CONFIG.fileSearch.telescope then
+          commands = searchCommands[2].commands
+        elseif CONFIG.fileSearch.fzf_lua then
+          commands = searchCommands[1].commands
+        end
+        dashboard.section.buttons.val = {
+          dashboard.button("f", "  Find Files", commands[1]),
+          dashboard.button("w", "  Live Grep", commands[2]),
+          dashboard.button("r", "  Resume Search", commands[3]),
+          dashboard.button("h", "?  Help Tags", commands[4]),
+          dashboard.button("q", "  Quit", ":qa<CR>"),
+        }
+      end
 
       -- center content
       dashboard.config.layout = {
@@ -248,10 +268,57 @@ bug.       {_.-``-'         {_/
     end,
   },
 
+  {
+    "rcarriga/nvim-notify",
+    enabled = CONFIG.ui.popups.notify,
+    config = function()
+      local notify = require("notify")
+
+      -- Set up nvim-notify with Oxocarbon-style highlights
+      ---@diagnostic disable-next-line: missing-fields
+      notify.setup({
+        stages = "static", -- Or any preferred animation
+        timeout = 3000, -- Time for notifications to disappear
+        background_colour = "#000000", -- Use Oxocarbon's preferred background color
+        fps = 10,
+        on_open = function(win)
+          vim.api.nvim_win_set_config(win, { focusable = false })
+        end,
+      })
+
+      -- Custom highlights for Oxocarbon theme
+      vim.cmd([[
+        highlight NotifyINFOBorder guifg=#78dce8
+        highlight NotifyINFOTitle  guifg=#78dce8
+        highlight NotifyINFOIcon   guifg=#78dce8
+
+        highlight NotifyWARNBorder guifg=#fc9867
+        highlight NotifyWARNTitle  guifg=#fc9867
+        highlight NotifyWARNIcon   guifg=#fc9867
+
+        highlight NotifyERRORBorder guifg=#ff6188
+        highlight NotifyERRORTitle  guifg=#ff6188
+        highlight NotifyERRORIcon   guifg=#ff6188
+
+        highlight NotifyDEBUGBorder guifg=#a9dc76
+        highlight NotifyDEBUGTitle  guifg=#a9dc76
+        highlight NotifyDEBUGIcon   guifg=#a9dc76
+
+        highlight NotifyTRACEBorder guifg=#ab9df2
+        highlight NotifyTRACETitle  guifg=#ab9df2
+        highlight NotifyTRACEIcon   guifg=#ab9df2
+      ]])
+
+      -- Set notify as default for vim notifications
+      vim.notify = notify
+    end,
+  },
+
   -- Changes alerts, command line aesthetic and location, and some other ui things
   {
     "folke/noice.nvim",
     event = "VeryLazy",
+    enabled = CONFIG.ui.popups.noice,
     opts = {
       cmdline = {
         enabled = true,
@@ -328,18 +395,5 @@ bug.       {_.-``-'         {_/
       maxkeys = 5,
       show_count = true,
     },
-  },
-
-  -- Neogit for ui Git interactions
-  {
-    "NeogitOrg/neogit",
-    cmd = "Neogit", -- Defer loading until command
-    enabled = false,
-    dependencies = {
-      "nvim-lua/plenary.nvim", -- required
-      "sindrets/diffview.nvim", -- optional - Diff integration
-      "ibhagwan/fzf-lua", -- optional
-    },
-    config = true,
   },
 }

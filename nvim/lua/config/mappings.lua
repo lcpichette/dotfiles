@@ -1,3 +1,4 @@
+local CONFIG = require("oxo_config")
 -- TIPS
 -- <C-i> in fzf-lua selects all files, then `Enter` to send them to quickfix list
 -- `tab` in fzf-lua selects an individual file, then `Etner` to send selected files to quickfix list
@@ -9,6 +10,7 @@ keymap("n", "<C-j>", "<Cmd>wincmd j<CR>", { noremap = true, silent = true })
 keymap("n", "<C-h>", "<Cmd>wincmd h<CR>", { noremap = true, silent = true })
 keymap("n", "<C-l>", "<Cmd>wincmd l<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "q", ":nohlsearch<CR>", { noremap = true, silent = true })
+--TODO: Also make this action clear the search register.
 
 -- Opinionated settings
 vim.opt.mouse = ""
@@ -33,28 +35,105 @@ map("n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>", { desc = "Code Definition" })
 -- map("n", "<leader>cD", "<cmd>lua vim.lsp.buf.definition()<CR>", { desc = "Code Declaration" })
 -- map("n", "<leader>cr", "<cmd>lua vim.lsp.buf.references()<CR>", { desc = "Code References" })
 
--- Using fzf-lua with lsp instead, you can send items from there to quickfix list if you'd like
-map("n", "<leader>cd", "<cmd>lua require('fzf-lua').lsp_definitions()<CR>", { desc = "Code Definitions" })
-map("n", "<leader>cD", "<cmd>lua require('fzf-lua').lsp_declarations()<CR>", { desc = "Code Declarations" })
-map("n", "<leader>cr", "<cmd>lua require('fzf-lua').lsp_references()<CR>", { desc = "Code References" })
-map("n", "<leader>ca", "<cmd>lua require('fzf-lua').lsp_code_actions()<CR>", { desc = "Code Actions" })
+if CONFIG.fileSearch.fzf_lua then
+  -- Using fzf-lua with lsp instead, you can send items from there to quickfix list if you'd like
+  map("n", "<leader>cd", "<cmd>lua require('fzf-lua').lsp_definitions()<CR>", { desc = "Code Definitions" })
+  map("n", "<leader>cD", "<cmd>lua require('fzf-lua').lsp_declarations()<CR>", { desc = "Code Declarations" })
+  map("n", "<leader>cr", "<cmd>lua require('fzf-lua').lsp_references()<CR>", { desc = "Code References" })
+  map("n", "<leader>ca", "<cmd>lua require('fzf-lua').lsp_code_actions()<CR>", { desc = "Code Actions" })
+end
 
 -- ============================================
 -- = fzf-lua file/search-related mappings    =
 -- ============================================
-map("n", "<leader>ff", "<cmd>FzfLua files<CR>", { desc = "Find Files" })
-map("n", "<leader>fw", "<cmd>FzfLua live_grep<CR>", { desc = "Find Word/Grep" })
-map("n", "<leader>fB", "<cmd>FzfLua buffers<CR>", { desc = "Find Buffers" })
-map("n", "<leader>fh", "<cmd>FzfLua help_tags<CR>", { desc = "Find Help" })
-map("n", "<leader>fl", "<cmd>FzfLua resume<CR>", { desc = "Find last search" })
-map("n", "<leader>fg", "<cmd>FzfLua git_status<CR>", { desc = "Find Changed Files" })
+if CONFIG.fileSearch.fzf_lua then
+  map("n", "<leader>ff", "<cmd>FzfLua files<CR>", { desc = "Find Files" })
+  map("n", "<leader>fw", "<cmd>FzfLua live_grep<CR>", { desc = "Find Word/Grep" })
+  map("n", "<leader>fB", "<cmd>FzfLua buffers<CR>", { desc = "Find Buffers" })
+  map("n", "<leader>fh", "<cmd>FzfLua help_tags<CR>", { desc = "Find Help" })
+  map("n", "<leader>fl", "<cmd>FzfLua resume<CR>", { desc = "Find last search" })
+  map("n", "<leader>fg", "<cmd>FzfLua git_status<CR>", { desc = "Find Changed Files" })
+end
 
 -- ============================================
 -- = fzf-lua git-related mappings    =
 -- ============================================
-map("n", "<leader>gs", "<cmd>FzfLua git_status<CR>", { desc = "Git Status" })
-map("n", "<leader>gS", "<cmd>FzfLua git_stash<CR>", { desc = "Git Stash" })
-map("n", "<leader>gb", "<cmd>FzfLua git_branches<CR>", { desc = "Git Branches" })
+if CONFIG.fileSearch.fzf_lua then
+  map("n", "<leader>gs", "<cmd>FzfLua git_status<CR>", { desc = "Git Status" })
+  map("n", "<leader>gS", "<cmd>FzfLua git_stash<CR>", { desc = "Git Stash" })
+  map("n", "<leader>gb", "<cmd>FzfLua git_branches<CR>", { desc = "Git Branches" })
+end
+
+-- ============================================
+-- = Snap mappings    =
+-- ============================================
+if CONFIG.fileSearch.snap then
+  local snap = require("snap")
+  snap.maps({
+    { "<Leader>ff", snap.config.file({ producer = "ripgrep.file" }), { desc = "Find by Filename" } },
+    { "<Leader>fw", snap.config.vimgrep({}), { desc = "Find by Word" } },
+    { "<Leader>fo", snap.config.file({ producer = "vim.oldfile" }), { desc = "Find Recent Files" } },
+    { "<Leader>fb", snap.config.file({ producer = "vim.buffer" }), { desc = "Find Buffers" } },
+  })
+end
+
+-- Telescope
+if CONFIG.fileSearch.telescope then
+  map("n", "<leader>ff", "<cmd>Telescope find_files<CR>", { desc = "Find files" })
+  map("n", "<leader>fw", "<cmd>Telescope live_grep<CR>", { desc = "Find by grep" })
+  map("n", "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Find help tags" })
+  map("n", "<leader>fo", "<cmd>Telescope oldfiles<CR>", { desc = "Find old files" })
+  map("n", "<leader>fc", "<cmd>Telescope commands<CR>", { desc = "Find commands" })
+  map("n", "<leader>fq", "<cmd>Telescope quickfix<CR>", { desc = "Find quickfix items" })
+  map("n", "<leader>fr", "<cmd>Telescope resume<CR>", { desc = "Find by last search" })
+  map("n", "<leader>fm", "<cmd>Telescope man_pages<CR>", { desc = "Find Manual Pages" })
+
+  -- Git-related pickers
+  map("n", "<leader>gc", "<cmd>Telescope git_commits<CR>", { desc = "Git commits" })
+  map("n", "<leader>gb", "<cmd>Telescope git_branches<CR>", { desc = "Git branches" })
+  map("n", "<leader>gs", "<cmd>Telescope git_status<CR>", { desc = "Git status" })
+  map("n", "<leader>gf", "<cmd>Telescope git_files<CR>", { desc = "Git files" })
+
+  -- LSP-related pickers with <leader>b{key}
+  map("n", "<leader>cd", "<cmd>Telescope lsp_definitions<CR>", { desc = "LSP definitions" })
+  map("n", "<leader>ci", "<cmd>Telescope lsp_implementations<CR>", { desc = "LSP implementations" })
+  map("n", "<leader>cr", "<cmd>Telescope lsp_references<CR>", { desc = "LSP references" })
+
+  -- Search and session pickers
+  map("n", "<leader>fz", "<cmd>Telescope current_buffer_fuzzy_find<CR>", { desc = "Fuzzy find in buffer" })
+  map("n", "<leader>fd", "<cmd>Telescope diagnostics<CR>", { desc = "Find diagnostics" })
+end
+
+-- ============================================
+-- = Neogit-related mappings    =
+-- ============================================
+if CONFIG.git.neogit then
+  map("n", "<leader>go", "<cmd>Neogit<cr>", { desc = "Open NeoGit" })
+  map("n", "<leader>gf", "<cmd>Neogit fetch<cr>", { desc = "Fetch" })
+  map("n", "<leader>gB", "<cmd>Neogit branch<cr>", { desc = "Branch" })
+  map("n", "<leader>gg", "<cmd>Neogit commit<cr>", { desc = "Commit" })
+  map("n", "<leader>gp", "<cmd>Neogit push<cr>", { desc = "Push" })
+end
+
+-- ============================================
+-- = Glance (LSP-peak) mappings    =
+-- ============================================
+if CONFIG.glance then
+  map("n", "gd", "<CMD>Glance definitions<CR>", { desc = "Find Definitions" })
+  map("n", "gr", "<CMD>Glance references<CR>", { desc = "Find References" })
+  map("n", "gy", "<CMD>Glance type_definitions<CR>", { desc = "Find Type Definitions" })
+  map("n", "gm", "<CMD>Glance implementations<CR>", { desc = "Find Implementations" })
+end
+
+-- ============================================
+-- = Bookmarks mappings    =
+-- ============================================
+if CONFIG.bookmarks then
+  map({ "n", "v" }, "mm", "<cmd>BookmarksMark<cr>", { desc = "Mark current line into active BookmarkList." })
+  map({ "n", "v" }, "mo", "<cmd>BookmarksGoto<cr>", { desc = "Go to bookmark in current active BookmarkList" })
+  map({ "n", "v" }, "md", "<cmd>BookmarksDesc<cr>", { desc = "Add description to the bookmark under cursor" })
+  map({ "n", "v" }, "mt", "<cmd>BookmarksTree<cr>", { desc = "Show bookmarks tree" })
+end
 
 -- ============================================
 -- = Quickfix list-related mappings           =
@@ -68,48 +147,110 @@ map("n", "<leader>qc", ":cclose<CR>", { desc = "Close Quickfix List" })
 map("n", "<leader>qn", ":cnext<CR>", { desc = "Next Quickfix" })
 map("n", "<leader>qp", ":cprev<CR>", { desc = "Prev Quickfix" })
 
--- Quicker-related
-local quicker = require("quicker")
-
--- Define a toggle function for expand/collapse
-local is_expanded = false
-vim.keymap.set("n", "<leader>qt", function()
-  if is_expanded then
-    quicker.collapse()
-  else
-    quicker.expand()
-  end
-  is_expanded = not is_expanded
-end, { desc = "Toggle quickfix expand/collapse" })
+if CONFIG.quickfix.quicker then
+  local quicker = require("quicker")
+  -- Define a toggle function for expand/collapse
+  local is_expanded = false
+  map("n", "<leader>qt", function()
+    if is_expanded then
+      quicker.collapse()
+    else
+      quicker.expand()
+    end
+    is_expanded = not is_expanded
+  end, { desc = "Toggle quickfix expand/collapse" })
+end
 
 -- ============================================
 -- = Commenting-related mappings              =
 -- ============================================
-local comment_api = require("Comment.api")
+if CONFIG.commentToggling then
+  local feedkeys = vim.api.nvim_feedkeys
+  map("n", "<leader>/", function()
+    feedkeys("gcc", "x", true)
+  end, { desc = "Toggle Line Comment" })
+  map("v", "<leader>/", function()
+    feedkeys("gb", "v", true)
+  end, { desc = "Toggle Line Comment" })
 
-map("n", "<leader>/", function()
-  comment_api.toggle.linewise.current()
-end, { desc = "Toggle Commment" })
+  map("n", "<leader>Ct", function() --  󰢷
+    feedkeys("gcA", "v", false)
+    feedkeys(" 󰢷  ", "v", false)
+  end, { desc = "'Mark' 󰢷  Task" })
+  map("n", "mt", function()
+    feedkeys("gcA", "v", false)
+    feedkeys(" 󰢷  ", "v", false)
+  end, { desc = "'Mark' 󰢷  Task" })
+
+  map("n", "<leader>Ci", function() --    inv
+    feedkeys("gcA", "v", false)
+    feedkeys("   ", "v", false)
+  end, { desc = "'Mark'   Investigate" })
+  map("n", "mi", function()
+    feedkeys("gcA", "v", false)
+    feedkeys("   ", "v", false)
+  end, { desc = "'Mark'   Investigate" })
+
+  map("n", "<leader>Cp", function() --    Pin
+    feedkeys("gcA", "v", false)
+    feedkeys("   ", "v", false)
+  end, { desc = "'Mark'   Pin" })
+  map("n", "mp", function()
+    feedkeys("gcA", "v", false)
+    feedkeys("   ", "v", false)
+  end, { desc = "'Mark'   Pin" })
+end
 
 -- ============================================
 -- = FZF-Lua custom mappings                  =
 -- ============================================
 -- Todo-Comment specific integration w/ fzf-lua
--- TODO: Fix this
-map("n", "<leader>tf", function()
-  require("fzf-lua").grep({ search = "TODO|FIX|HACK|WARN|NOTE" })
-end, { desc = "Search TODOs with fzf-lua" })
+if CONFIG.fileSearch.fzf_lua then
+  local search = require("fzf-lua")
+  map("n", "<leader>tf", function()
+    search.grep({ search = "TODO|FIX|HACK|WARN|NOTE" })
+  end, { desc = "Find TODOs" })
+  map("n", "<leader>tc", function()
+    search.live_grep({ rg_opts = "--type lua -e TODO|FIX|HACK" })
+  end, { desc = "Find TODOs in Config" })
 
-map("n", "<leader>tc", function()
-  require("fzf-lua").live_grep({ rg_opts = "--type lua -e TODO|FIX|HACK" })
-end, { desc = "Live grep TODOs in Lua files" })
+  map("n", "<leader>tt", function()
+    search.live_grep({ rg_opts = "-e 󰢷 " })
+  end, { desc = "Find all Tasks" })
+  map("n", "<leader>ti", function()
+    search.live_grep({ rg_opts = "-e  " })
+  end, { desc = "Find all Investigations" })
+  map("n", "<leader>tp", function()
+    search.live_grep({ rg_opts = "-e  " })
+  end, { desc = "Find all Pins" })
+elseif CONFIG.fileSearch.telescope then
+  local search = require("telescope.builtin")
+
+  map("n", "<leader>tt", function() --  
+    search.live_grep({
+      default_text = "-e 󰢷 ",
+    })
+  end, { desc = "Find all Tasks" })
+  map("n", "<leader>ti", function()
+    search.live_grep({
+      default_text = "-e  ",
+    })
+  end, { desc = "Find all Investigations" })
+  map("n", "<leader>tp", function()
+    search.live_grep({
+      default_text = "-e  ",
+    })
+  end, { desc = "Find all Pins" })
+end
 
 -- ============================================
 -- = Grug-Far Mappings                        =
 -- ============================================
-map("n", "<leader>fr", function()
-  require("grug-far").open({ windowCreationCommand = "vsplit" })
-end, { desc = "Find and Replace" })
+if CONFIG.grugfar then
+  map("n", "<leader>fr", function()
+    require("grug-far").open({ windowCreationCommand = "vsplit" })
+  end, { desc = "Find and Replace" })
+end
 
 -- ============================================
 -- = ShowKeys Mappings                        =
@@ -119,12 +260,25 @@ map("n", "<leader>uk", "<cmd>ShowkeysToggle<CR>", { desc = "Show Keys while typi
 -- ============================================
 -- = Custom Modules Mappings                  =
 -- ============================================
--- Custom search
-local custom_search = require("custom_search")
-vim.keymap.set("n", "/", custom_search.searchFile, { desc = "Custom FZF lgrep logic" })
--- Enable if you prefer ripgrep to grep
--- vim.keymap.set("n", "<leader>fw", custom_search.liveRipGrep, { desc = "Find Word" })
+if CONFIG.custom.search_utils and (CONFIG.fileSearch.fzf_lua or CONFIG.fileSearch.telescope) then
+  -- Custom search
+  local command
+  local custom_search = require("custom_search")
+  if CONFIG.fileSearch.fzf_lua then
+    command = custom_search.searchFile
+  elseif CONFIG.fileSearch.telescope then
+    command = custom_search.search_in_buffer
+  end
 
--- Custom notes
-local custom_notes = require("custom_notes")
-vim.keymap.set("n", "<leader>n", custom_notes.openNote, { desc = "Toggle Notes" })
+  map("n", "/", command, { desc = "Custom search logic" })
+  -- Enable if you prefer ripgrep to grep
+  -- vim.keymap("n", "<leader>fw", custom_search.liveRipGrep, { desc = "Find Word" })
+end
+
+if CONFIG.custom.notes then
+  -- Custom notes
+  local custom_notes = require("custom_notes")
+  map("n", "<leader>fn", custom_notes.openNotes, { desc = "Find Notes" })
+  map("n", "<leader>N", custom_notes.openNotes, { desc = "Find Notes" })
+  map("n", "<leader>n", custom_notes.openScratch, { desc = "Toggle To-Do" })
+end

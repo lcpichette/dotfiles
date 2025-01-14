@@ -67,6 +67,8 @@ abbr -a ",sw" "git switch"
 abbr -a ",sc" "git switch -c"
 abbr -a ",b"  "git branch"
 abbr -a ",l"  "git log"
+abbr -a ",stale" "git branch --merged| egrep -v \"(^\*|master|production|qa|develop|accept|stage)\""
+abbr -a ",clean" "git branch --merged| egrep -v \"(^\*|master|production|qa|develop|accept|stage)\" | xargs git branch -d"
 
 abbr -a gi  "gh issue"
 abbr -a gil "gh issue list"
@@ -81,6 +83,9 @@ abbr -a "-"    "cd -"
 abbr -a ".."   "cd .."
 abbr -a "..."  "cd ../.."
 abbr -a "...." "cd ../../.."
+
+abbr -a nv "nvimcd"
+abbr -a nvim "nvimcd"
 
 # pnpm
 set -gx PNPM_HOME "/Users/lucaspichette/Library/pnpm"
@@ -145,7 +150,26 @@ function vv
 end
 
 function fish_user_key_bindings
+    fish_vi_key_bindings
+    bind -M insert \cf accept-autosuggestion
     bind \cf accept-autosuggestion
 end
+
+# Store `pwd` after we exit neovim -- allows oil to be used as fm
+function nvimcd
+    set tmpfile (mktemp)
+    set -x NVIM_LASTDIR_FILE $tmpfile
+
+    nvim $argv
+    if test -f $tmpfile
+        set lastdir (cat $tmpfile)
+        rm -f $tmpfile
+
+        if test -n "$lastdir" -a -d "$lastdir"
+            cd $lastdir
+        end
+    end
+end
+
 
 fish_add_path /Users/lucaspichette/.spicetify

@@ -8,6 +8,7 @@ See [gallery](#🎨-gallery) and [random showcases](#🎥-random-showcases) for 
 
 ## ✨ Features
 
+- **Easy to Change:** Using a different plugin is as easy as tweaking `false`->`true` in `oxo_config.lua`.
 - **Minimalist Design:** Clean and focused user interface.
 - **Modern Plugins:** Oldies can be goodies, but some of these new plugins just better(ies?)
 - **Modular Configuration:** Easy to extend and maintain.
@@ -43,9 +44,92 @@ https://github.com/user-attachments/assets/22b1b87e-eae7-478a-8111-7d57cdbae483
 
 
 
+
+## 🛠️ Installation
+
+1. **Backup Your Existing Configuration**  
+   Before proceeding, ensure you back up your current Neovim configuration to avoid losing any important settings:
+   ```bash
+   mv ~/.config/nvim ~/.config/nvim.backup
+   mv ~/.local/share/nvim ~/.local/share/nvim.backup
+   mv ~/.cache/nvim ~/.cache/nvim.backup
+2. Clone the repository into your Neovim config directory:
+   ```bash
+   git clone https://github.com/lcpichette/sensible-oxo ~/.config/nvim
+   ```
+
+## ⚙️ Configuration
+
+Below you can see the [`oxo_config.lua`](https://github.com/lcpichette/sensible-oxo/blob/main/oxo_config.lua) file (subject to change, as TODOs indicate):
+```lua
+return {
+  -- Functionality-level
+  autocomplete = {
+    blink = true,
+  },
+  dap = false, -- TODO: Expand to permit specifying DAPs
+  lsp = true, -- TODO: Expand to permit specifying LSPs
+  lint = true, --etc.
+  format = true, --etc.
+  fancyLSPPreviews = true,
+  improvedMotions = true, -- Spider.nvim
+  lspStatusIndicators = true, -- Messages visible bottom right indiciating load status of LSPs
+  fileSearch = {
+    fzf_lua = true,
+  },
+  quickfix = {
+    quicker = true,
+  },
+  statusline = {
+    lualine = false,
+    statusline = true,
+  },
+  autopairs = {
+    mini = true,
+    autopairs = false,
+  },
+  commentToggling = true,
+
+  -- Package-level
+  git = {
+    neogit = true, -- UI Git interaction in neovim; "Magik" for nvim
+    gitsigns = true, -- git diff indicators in buffer (left of line numbers)
+  },
+  neorg = false,
+  grugfar = false,
+  markview = true,
+  blankline = true,
+  hardtime = false,
+  glance = true,
+
+  -- Experimental Custom Plugins
+  custom = {
+    notes = true, --TODO: Make this config opt matter
+    silver_search = false, --TODO: Make this config opt matter
+    search_utils = true, --TODO: Make this config opt matter
+  },
+}
+
+```
+
+In the above, for example, by changing `dap = false` to `dap = true`, we enable a few plugins that enable DAP keybinds and plugins! I went ahead and recorded this example into a kind of Configuration "Demo" video, so that you can see how it works. In the video we see mappings and plugins being enabled and disabled as per what's set in the config.
+
+### Configuration Demo
+
+https://github.com/user-attachments/assets/53eb0cca-5060-42be-a686-8e48697d4fc6
+
+
+
+## 🎨 Gallery
+
+
+![2025-01-08@03 05 28 January-08@2x](https://github.com/user-attachments/assets/4857e5c1-0b76-4e5e-b349-55d06c1935f7)
+
+
+
 ## 📦 Plugin Overview
 
-### Installed Plugins (41)
+### Installed Plugins
 | Plugin | Purpose |
 |--------|---------|
 | [alpha-nvim](https://github.com/goolord/alpha-nvim) | Start screen customization |
@@ -86,8 +170,9 @@ https://github.com/user-attachments/assets/22b1b87e-eae7-478a-8111-7d57cdbae483
 | [trouble.nvim](https://github.com/folke/trouble.nvim) | Diagnostics and quickfix UI |
 | [vim-startuptime](https://github.com/dstein64/vim-startuptime) | Startup profiling |
 | [grug-far.nvim](https://github.com/example/grug-far.nvim) | Search and replace w/ friendly UI |
+| [neogit](https://github.com/TimUntersberger/neogit) | Even with its 25ms+ impact, the impact comes upon starting the command `:Neogit <...>` -- the startup time of neovim (`nvim <...>`) isn't actually impacted. |
 
-### Disabled Plugins (3)
+### Disabled Plugins
 
 These are plugins that I may want to enable in the future -- whether I find myself needing them,
 willing to compromise the performance hit for them, or find additional ways to better mitigate their
@@ -97,7 +182,6 @@ Due to this, I've left them in the codebase but disabled (no performance hit).
 
 | Plugin | Purpose |
 |--------|---------|
-| [neogit](https://github.com/TimUntersberger/neogit) | Disabled |
 | [rainbow-delimiters.nvim](https://github.com/luukvbaal/rainbow-delimiters.nvim) | Disabled |
 | [hardtime.nvim](https://github.com/m4xshen/hardtime.nvim) | Discourage bad habits; Disabled bc I find it doesn't pop-up often and it has non-zero perforamance imapct. |
 
@@ -114,24 +198,6 @@ These are plugins I tried and either felt didn't fit within the desired workflow
 | [Menu](https://github.com/nvzone/menu) | Anti-synergy between Mouse + Neovim IMO, maybe I'm misunderstanding if it has keyboard potential. Other plugins I'd rather have in exchange for its performance hit. |
 
 
-## 🛠️ Installation
-
-1. **Backup Your Existing Configuration**  
-   Before proceeding, ensure you back up your current Neovim configuration to avoid losing any important settings:
-   ```bash
-   mv ~/.config/nvim ~/.config/nvim.backup
-   mv ~/.local/share/nvim ~/.local/share/nvim.backup
-   mv ~/.cache/nvim ~/.cache/nvim.backup
-2. Clone the repository into your Neovim config directory:
-   ```bash
-   git clone https://github.com/lcpichette/sensible-oxo ~/.config/nvim
-   ```
-
-
-## 🎨 Gallery
-
-
-
 ## ☑️ To-Do
 
 Eventually I'd like to make a stupidly-simple interface for updating your neovim configuration while keeping it highly performant (`sensible`), with an opinionated styling, workflow, and toolset (`oxo`).
@@ -141,31 +207,30 @@ I'd like to think I'm 85% of the way their with the `oxo`, and about 20% of the 
 To get `oxo` to 100% we're going to need community feedback about alternatives (some plugins like fzf-lua vs telescope was a very intentional decision and I will NOT be adding it as a config option due to its a performance issues). Approved (specifiable in config) tools should be able to be turned on and off via the variable config (which does not exist yet). But, if there's a plugin you'd like to see supported via config option specify that in an issue on this repo -- I'm open to suggestions!
 
 NOT STARTED:
-- [ ] Variable configs
-   - Description: Changing variables in a config table `{ ascii_art = "cat" }` to `{ ascii_art = "saturn" }` will, in this example, change the ascii art shown by alpha-nvim to be a saturn instead of the current cat. 
-   - [ ] Establish design Information Architecture that is easy to tweak and read `sensible-oxo`-specific configs that make performant changes to the overall project (We shouldn't load every config option; only load what we need and only when we need it)
-   - [ ] Create config structure and default file.
-   - [ ] Create loader to read these config options and load only what's relevant as per the specified config
-   - [ ] Support the following config options:
-      - [ ] Ascii Art changes to "dashboard" `{ ascii_art = "cat" }`
-      - [ ] "Magic" LSP,Lint,Format selection based on desired supported filetypes `{ support_fts = { "lua", "ts", "js", "zig", "jsx", "tsx" } }`
-      - [ ] Git (buffer) `{ git_buffer = true }`
-      - [ ] Diagnostics (buffer) `{ diagnostics_buffer = true }`
-      - [ ] Lualine selectable presets `{ lualine_preset = "default" }`
-      - [ ] Commandline location `{ commandline_style = "floating" }`
 - [ ] Add project navigation
 - [ ] Add quick terminal options (floating, horizontal, etc)
 - [ ] Add sessions, if not too harmful to load time
 
 WIP:
-- [ ] Add custom notes
-   - [ ] Syntax highlighting
-   - [ ] Persistent changes
-   - [ ] Incredibly quick to load notes and the module
+- [~] Variable configs
+   - Description: Changing variables in a config table `{ ascii_art = "cat" }` to `{ ascii_art = "saturn" }` will, in this example, change the ascii art shown by alpha-nvim to be a saturn instead of the current cat. 
+   - [x] Establish design Information Architecture that is easy to tweak and read `sensible-oxo`-specific configs that make performant changes to the overall project (We shouldn't load every config option; only load what we need and only when we need it)
+   - [x] Create config structure and default file.
+   - [~] Support the following config options:
+      - [ ] Ascii Art changes to "dashboard" `{ ascii_art = "cat" }`
+      - [ ] "Magic" LSP,Lint,Format selection based on desired supported filetypes `{ support_fts = { "lua", "ts", "js", "zig", "jsx", "tsx" } }`
+      - [x] Git (buffer) `{ git_buffer = true }`
+      - [ ] Diagnostics (buffer) `{ diagnostics_buffer = true }`
+      - [ ] Lualine selectable presets `{ lualine_preset = "default" }`
+      - [ ] Commandline location `{ commandline_style = "floating" }`
 
 DONE:
 - [x] Change `/` to use fzf-lua + vim search register w/ Oxo highlighting.
 - [x] Fix inconsistent coloring in ascii art
+- [x] Add custom notes
+   - [x] Syntax highlighting
+   - [x] Persistent changes
+   - [x] Incredibly quick to load notes and the module
 
 ## 🤝 Credits
 

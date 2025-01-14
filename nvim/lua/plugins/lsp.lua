@@ -1,10 +1,11 @@
-local DAP_ENABLED = false
+local CONFIG = require("oxo_config")
 
 return {
   -- dressing.nvim: Improve Neovim's UI for input and selection
   {
     "stevearc/dressing.nvim",
     event = "VeryLazy", -- Load the plugin when Neovim is idle
+    enabled = CONFIG.dressing,
     opts = {
       -- Customize the UI components
       input = {
@@ -55,7 +56,7 @@ return {
     config = function()
       require("mason").setup()
 
-      -- Ensure formatters are installed
+      -- Ensure FORMATTERS are installed
       local mason_registry = require("mason-registry")
       local ensure_installed = {
         "stylua",
@@ -72,7 +73,17 @@ return {
 
       -- Ensure LSPs are installed
       require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "ts_ls", "tailwindcss", "cssls", "html", "zls" },
+        ensure_installed = {
+          "lua_ls",
+          "ts_ls",
+          "tailwindcss",
+          "cssls",
+          "html",
+          "zls",
+          "somesass_ls",
+          "angularls",
+          "eslint",
+        },
         automatic_installation = true,
       })
 
@@ -107,11 +118,20 @@ return {
           })
         end,
 
+        -- SOMESASS configuration
+        ["somesass_ls"] = function()
+          lspconfig.somesass_ls.setup({
+            capabilities = capabilities,
+            filetypes = { "scss", "less" },
+            root_dir = lspconfig.util.root_pattern(".git", "package.json"),
+          })
+        end,
+
         -- CSSLS configuration
         ["cssls"] = function()
           lspconfig.cssls.setup({
             capabilities = capabilities,
-            filetypes = { "css", "scss", "less" },
+            filetypes = { "css" },
             root_dir = lspconfig.util.root_pattern(".git", "package.json"),
           })
         end,
@@ -133,6 +153,58 @@ return {
         -- TypeScript server configuration
         ["ts_ls"] = function()
           lspconfig.ts_ls.setup({
+            filetypes = {
+              "javascript",
+              "typescript",
+            },
+            settings = {
+              javascript = {
+                suggest = {
+                  autoImports = true,
+                },
+              },
+              typescript = {
+                suggest = {
+                  autoImports = true,
+                },
+              },
+            },
+          })
+        end,
+
+        ["eslint"] = function()
+          lspconfig.eslint.setup({
+            filetypes = {
+              "javascript",
+              "javascriptreact",
+              "javascript.jsx",
+              "typescript",
+              "typescriptreact",
+              "typescript.tsx",
+              "vue",
+              "svelte",
+              "astro",
+            },
+            root_dir = lspconfig.util.root_pattern("."),
+            settings = {
+              javascript = {
+                suggest = {
+                  autoImports = true,
+                },
+              },
+              typescript = {
+                suggest = {
+                  autoImports = true,
+                },
+              },
+            },
+          })
+        end,
+
+        ["angularls"] = function()
+          lspconfig.angularls.setup({
+            filetypes = { "css" },
+            root_dir = lspconfig.util.root_pattern(".git", "package.json"),
             settings = {
               javascript = {
                 suggest = {
@@ -160,159 +232,6 @@ return {
     end,
   },
 
-
-  -- lualine, bottom status line
-  {
-    "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      local lualine = require("lualine")
-
-      -- Helper function to abbreviate the folder path
-      local function abbreviate_path(filepath)
-        local parts = vim.split(filepath, "/")
-        for i = 1, #parts - 1 do
-          parts[i] = parts[i]:sub(1, 2) -- Keep only the first 2 characters of each folder
-        end
-        return table.concat(parts, "/")
-      end
-
-      -- Custom filename component with abbreviated folders
-      local function custom_filename()
-        local filepath = vim.fn.expand("%:p") -- Full file path
-        local relative_path = vim.fn.fnamemodify(filepath, ":~:.:") -- Relative to cwd
-        return abbreviate_path(relative_path)
-      end
-
-      -- Define Oxocarbon color palette
-      local oxo = {
-        fg = "#c0caf5", -- Default foreground
-        purple = "#bb9af7", -- Purple
-        blue = "#7aa2f7", -- Blue
-        green = "#7dcfff",
-        red = "#f7768e", -- Red for diagnostics
-        yellow = "#f49800",
-      }
-
-      -- Custom lualine theme with no background colors
-      local custom_theme = {
-        normal = {
-          a = { fg = oxo.purple, gui = "bold" },
-          b = { fg = oxo.fg },
-          c = { fg = oxo.fg },
-        },
-        insert = { a = { fg = oxo.blue, gui = "bold" } },
-        visual = { a = { fg = oxo.purple, gui = "bold" } },
-        replace = { a = { fg = oxo.red, gui = "bold" } },
-        inactive = {
-          a = { fg = oxo.fg },
-          b = { fg = oxo.fg },
-          c = { fg = oxo.fg },
-        },
-      }
-
-      -- Helper function to get active LSP servers
-      local function lsp_info()
-        local clients = vim.lsp.get_clients({ bufnr = 0 })
-        if #clients == 0 then
-          return ""
-        end
-        local names = {}
-        for _, client in ipairs(clients) do
-          table.insert(names, client.name)
-        end
-        return "⦿ " .. table.concat(names, ", ")
-      end
-
-      -- Helper function to get active linters using nvim_lint
-      local function linters_info()
-        local lint = require("lint")
-        local filetype = vim.bo.filetype
-        local linters = lint.linters_by_ft[filetype] or {}
-        if #linters == 0 then
-          return ""
-        end
-        return "▣ " .. table.concat(linters, ", ")
-      end
-
-      -- Configure lualine
-      lualine.setup({
-        options = {
-          theme = custom_theme,
-          section_separators = "",
-          component_separators = "",
-          disabled_filetypes = { statusline = {}, winbar = {} },
-          always_divide_middle = false,
-          globalstatus = true, -- Requires Neovim 0.7+
-        },
-        sections = {
-          -- Left sections
-          lualine_a = {
-            {
-              "mode",
-              fmt = function(mode)
-                return mode:sub(1, 1)
-              end,
-              color = { fg = oxo.purple, gui = "bold" },
-            },
-          },
-          lualine_b = { "branch" },
-          -- Center is empty for minimalism
-          lualine_c = {},
-          -- Right sections
-          lualine_x = {
-            {
-              custom_filename,
-              symbols = { modified = " ●", readonly = " 🔒", unnamed = "" },
-            },
-          },
-          lualine_y = {
-            {
-              "diagnostics",
-              sources = { "nvim_lsp" },
-              symbols = {
-                error = "✗ ",
-                warn = "▲ ",
-                info = "i ",
-                hint = "☀ ",
-              },
-              diagnostics_color = {
-                color_error = { fg = oxo.red },
-                color_warn = { fg = oxo.purple },
-                color_info = { fg = oxo.blue },
-                color_hint = { fg = oxo.yellow },
-              },
-            },
-            {
-              function()
-                return lsp_info()
-              end,
-              icon = "\xef\x84\x85 ",
-              color = { fg = oxo.green },
-            },
-            {
-              function()
-                return linters_info()
-              end,
-              icon = "\xe2\x9a\x99\xef\xb8\x8f ",
-              color = { fg = oxo.blue },
-            },
-          },
-          lualine_z = {},
-        },
-        inactive_sections = {
-          lualine_a = {},
-          lualine_b = {},
-          lualine_c = { "filename" },
-          lualine_x = { "location" },
-          lualine_y = {},
-          lualine_z = {},
-        },
-        extensions = {},
-      })
-    end,
-  },
-
   {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
@@ -328,13 +247,13 @@ return {
   -- DAP
   {
     "nvim-neotest/nvim-nio",
-    enabled = DAP_ENABLED,
+    enabled = CONFIG.dap,
     lazy = true, -- Optional: Load only when needed
   },
 
   {
     "mfussenegger/nvim-dap",
-    enabled = DAP_ENABLED,
+    enabled = CONFIG.dap,
     dependencies = { "nvim-neotest/nvim-nio" },
     config = function()
       local dap = require("dap")
@@ -442,7 +361,7 @@ return {
   -- UI for DAP
   {
     "rcarriga/nvim-dap-ui",
-    enabled = DAP_ENABLED,
+    enabled = CONFIG.dap,
     opts = {
       layouts = {
         {
@@ -486,7 +405,7 @@ return {
   -- Virtual text for DAP
   {
     "theHamsta/nvim-dap-virtual-text",
-    enabled = DAP_ENABLED,
+    enabled = CONFIG.dap,
     opts = {
       commented = true,
     },
