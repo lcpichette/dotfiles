@@ -11,9 +11,9 @@ return {
   improvedMotions = true, -- Spider.nvim
   lspStatusIndicators = true, -- Messages visible bottom right indiciating load status of LSPs
   fileSearch = {
-    fzf_lua = false,
+    fzf_lua = true,
     snap = false,
-    telescope = true,
+    telescope = false,
   },
   quickfix = {
     quicker = false,
@@ -23,8 +23,8 @@ return {
     statusline = true,
   },
   autopairs = {
-    mini = true,
-    autopairs = false,
+    mini = false,
+    autopairs = true,
   },
   commentToggling = true,
   ui = {
@@ -45,7 +45,7 @@ return {
   neorg = false,
   grugfar = false,
   markview = true,
-  blankline = false,
+  blankline = false, -- Indent guideline fluff
   hardtime = false,
   glance = true,
   arrow = true,
