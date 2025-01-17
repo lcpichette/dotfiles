@@ -24,9 +24,6 @@
 !fish/
 !fish/**
 
-!vscode/
-!vscode/**
-
 # Always ignore these patterns, even if otherwise included
 */node_modules
 */.tabby/*
