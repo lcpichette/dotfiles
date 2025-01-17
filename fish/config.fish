@@ -87,6 +87,22 @@ abbr -a "...." "cd ../../.."
 abbr -a nv "nvimcd"
 abbr -a nvim "nvimcd"
 
+# Store `pwd` after we exit neovim -- allows oil to be used as fm
+function nvimcd
+    set tmpfile (mktemp)
+    set -x NVIM_LASTDIR_FILE $tmpfile
+
+    nvim $argv
+    if test -f $tmpfile
+        set lastdir (cat $tmpfile)
+        rm -f $tmpfile
+
+        if test -n "$lastdir" -a -d "$lastdir"
+            cd $lastdir
+        end
+    end
+end
+
 # pnpm
 set -gx PNPM_HOME "/Users/lucaspichette/Library/pnpm"
 if not string match -q -- $PNPM_HOME $PATH
@@ -116,7 +132,7 @@ function openXplr
 end
 
 function openOil
-    nvim .
+    nvimcd .
 end
 
 
@@ -154,22 +170,5 @@ function fish_user_key_bindings
     bind -M insert \cf accept-autosuggestion
     bind \cf accept-autosuggestion
 end
-
-# Store `pwd` after we exit neovim -- allows oil to be used as fm
-function nvimcd
-    set tmpfile (mktemp)
-    set -x NVIM_LASTDIR_FILE $tmpfile
-
-    nvim $argv
-    if test -f $tmpfile
-        set lastdir (cat $tmpfile)
-        rm -f $tmpfile
-
-        if test -n "$lastdir" -a -d "$lastdir"
-            cd $lastdir
-        end
-    end
-end
-
 
 fish_add_path /Users/lucaspichette/.spicetify
