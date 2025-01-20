@@ -7,6 +7,10 @@ l = ":o ~/.config/helix/languages.toml"
 
 [editor]
 gutters = ["diagnostics", "spacer", "diff", "line-numbers", "spacer", "spacer"]
+line-number = "relative"
+
+[editor.soft-wrap]
+enable = true
 
 [editor.inline-diagnostics]
 cursor-line = "error"
